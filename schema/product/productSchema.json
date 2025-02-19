@@ -1,0 +1,13 @@
+{
+  "tid": "product",
+  "propertyTypes": [
+    {
+      "pid": "name",
+      "valueType": "STRING"
+    },
+    {
+      "pid": "price",
+      "valueType": "DOUBLE"
+    }
+  ]
+}
