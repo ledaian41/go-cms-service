@@ -7,7 +7,7 @@ import (
 )
 
 type AppConfig struct {
-	DatabaseUrl string
+	CachePath string
 }
 
 func LoadConfig() *AppConfig {
@@ -19,6 +19,6 @@ func LoadConfig() *AppConfig {
 
 	// Create and return AppConfig instance
 	return &AppConfig{
-		DatabaseUrl: os.Getenv("DATABASE_URL"),
+		CachePath: os.Getenv("CACHE_PATH"),
 	}
 }

@@ -15,7 +15,7 @@ func Init(path string) *gorm.DB {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	fmt.Println("✅Connected to database ")
+	fmt.Println("✅ Connected to database ")
 
 	sqlDB, _ := DB.DB()
 	sqlDB.SetMaxOpenConns(10)

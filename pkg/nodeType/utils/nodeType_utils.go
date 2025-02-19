@@ -1,4 +1,4 @@
-package utils
+package nodeType_utils
 
 import (
 	"encoding/json"
@@ -6,12 +6,12 @@ import (
 	"io/ioutil"
 )
 
-func loadSchema(path string) (*model.NodeType, error) {
+func loadSchema(path string) (*nodeType_model.NodeType, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	var schema model.NodeType
+	var schema nodeType_model.NodeType
 	if err := json.Unmarshal(data, &schema); err != nil {
 		return nil, err
 	}
