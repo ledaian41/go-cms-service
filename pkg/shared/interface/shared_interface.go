@@ -6,4 +6,5 @@ import (
 
 type NodeTypeServiceInterface interface {
 	FetchNodeTypes() *[]shared_dto.NodeTypeDTO
+	LoadSchema(filePath string) (string, error)
 }

@@ -1,6 +1,7 @@
 package helper_handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-product-service/pkg/shared/interface"
 	"net/http"
@@ -15,7 +16,12 @@ func NewHelperHandler(nodeTypeService shared_interface.NodeTypeServiceInterface)
 }
 
 func (h *HelperHandler) LoadSchema(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	filePath := c.Query("filePath")
+	tid, err := h.nodeTypeService.LoadSchema(filePath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	}
+	c.String(http.StatusOK, fmt.Sprintf("Load %s schema successfully!", tid))
 }
 
 func (h *HelperHandler) FetchNodeType(c *gin.Context) {

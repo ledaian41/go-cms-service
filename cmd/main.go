@@ -17,7 +17,7 @@ func main() {
 
 	helperHandler := helper_handler.NewHelperHandler(nodeTypeService)
 	r.GET("helper/loadSchema", helperHandler.LoadSchema)
-	r.GET("helper/nodeType/list", helperHandler.FetchNodeType)
+	r.GET("helper/nodeType", helperHandler.FetchNodeType)
 
 	r.Run("localhost:8080")
 }
