@@ -38,7 +38,7 @@ func (s *NodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
 }
 
 func (s *NodeTypeService) LoadSchema(path string) (string, error) {
-	newNodeType, err := nodeType_utils.LoadSchema(path)
+	newNodeType, err := nodeType_utils.ReadSchemaJson(path)
 	if err != nil {
 		log.Fatalf("❌ Failed at LoadSchema: %v", err)
 		return path, err
@@ -46,15 +46,22 @@ func (s *NodeTypeService) LoadSchema(path string) (string, error) {
 
 	var existing nodeType_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Where("t_id = ?", newNodeType.TID).First(&existing).Error; err != nil {
-		if err := s.db.Create(&newNodeType).Error; err != nil {
-			log.Fatalf("❌ Failed at save NodeType: %v", err)
-			return newNodeType.TID, err
-		}
-		log.Println(fmt.Sprintf("🎉 Helper - Load new %s schema successfully!", newNodeType.TID))
-		return newNodeType.TID, nil
+		return s.createNewNodeType(newNodeType)
 	}
-	existing.PropertyTypes = newNodeType.PropertyTypes
+	return s.updateNodeType(&existing, newNodeType)
+}
 
+func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (string, error) {
+	if err := s.db.Create(&nodeType).Error; err != nil {
+		log.Fatalf("❌ Failed at save NodeType: %v", err)
+		return nodeType.TID, err
+	}
+	log.Println(fmt.Sprintf("🎉 Helper - Load new %s schema successfully!", nodeType.TID))
+	return nodeType.TID, nil
+}
+
+func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
+	existing.PropertyTypes = newNodeType.PropertyTypes
 	if err := s.db.Model(&existing).Association("PropertyTypes").Replace(newNodeType.PropertyTypes); err != nil {
 		log.Fatalf("❌ Failed at update PropertyTypes: %v", err)
 		return existing.TID, err
@@ -64,6 +71,6 @@ func (s *NodeTypeService) LoadSchema(path string) (string, error) {
 		log.Fatalf("❌ Failed at update NodeType: %v", err)
 		return existing.TID, err
 	}
-	log.Println(fmt.Sprintf("🎉 Helper - Load %s schema successfully!"), existing.TID)
+	log.Println(fmt.Sprintf("🎉 Helper - Load %s schema successfully!", existing.TID))
 	return existing.TID, nil
 }

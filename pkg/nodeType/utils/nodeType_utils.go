@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 )
 
-func LoadSchema(path string) (*nodeType_model.NodeType, error) {
+func ReadSchemaJson(path string) (*nodeType_model.NodeType, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
