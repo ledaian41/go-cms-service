@@ -2,8 +2,11 @@ package nodeType_utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"go-product-service/pkg/nodeType/model"
 	"io/ioutil"
+	"log"
+	"path/filepath"
 )
 
 func ReadSchemaJson(path string) (*nodeType_model.NodeType, error) {
@@ -16,4 +19,27 @@ func ReadSchemaJson(path string) (*nodeType_model.NodeType, error) {
 		return nil, err
 	}
 	return &schema, nil
+}
+
+func ReadSchemasFromDir(path string) ([]*nodeType_model.NodeType, error) {
+	var schemas []*nodeType_model.NodeType
+	pattern := filepath.Join(path, "*.json")
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("❌ Failed to glob files in directory: %s", path, err)
+	}
+
+	if len(files) == 0 {
+		log.Println("No files found in directory: ", path)
+		return nil, nil
+	}
+
+	for _, file := range files {
+		schema, err := ReadSchemaJson(file)
+		if err != nil {
+			return nil, err
+		}
+		schemas = append(schemas, schema)
+	}
+	return schemas, nil
 }

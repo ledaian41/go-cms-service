@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-product-service/pkg/shared/interface"
+	"log"
 	"net/http"
 )
 
@@ -17,11 +18,22 @@ func NewHelperHandler(nodeTypeService shared_interface.NodeTypeServiceInterface)
 
 func (h *HelperHandler) LoadSchema(c *gin.Context) {
 	filePath := c.Query("filePath")
-	tid, err := h.nodeTypeService.LoadSchema(filePath)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	messageCh := make(chan string)
+	go h.nodeTypeService.LoadSchema(filePath, messageCh)
+	// Server-Sent Events (SSE) - Config Header streaming message
+	c.Writer.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Status(http.StatusOK)
+
+	for tid := range messageCh {
+		_, err := c.Writer.Write([]byte(fmt.Sprintf("🎉 Load nodeType: %s successfully!\n", tid)))
+		if err != nil {
+			log.Println("❌ Error writing to response:", err)
+			break
+		}
+		c.Writer.Flush()
 	}
-	c.String(http.StatusOK, fmt.Sprintf("Load %s schema successfully!", tid))
 }
 
 func (h *HelperHandler) FetchNodeType(c *gin.Context) {
