@@ -1,4 +1,4 @@
-module go-product-service
+module go-cms-service
 
 go 1.23.3
 

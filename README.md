@@ -1,1 +1,1 @@
-# go-product-service
+# go-cms-service

@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-product-service/config"
-	"go-product-service/pkg/db"
-	"go-product-service/pkg/helper/handler"
-	nodeType_service "go-product-service/pkg/nodeType/service"
+	"go-cms-service/config"
+	"go-cms-service/pkg/db"
+	"go-cms-service/pkg/helper/handler"
+	"go-cms-service/pkg/nodeType/service"
 )
 
 func main() {
