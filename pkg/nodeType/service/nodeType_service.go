@@ -40,11 +40,11 @@ func (s *NodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
 	return &dtos
 }
 
-func (s *NodeTypeService) DeleteNodeType(tid string) {
+func (s *NodeTypeService) DeleteNodeType(tid string) (bool, error) {
 	var node nodeType_model.NodeType
 	if err := s.db.Where("tid = ?", tid).First(&node).Error; err != nil {
 		log.Printf("❌ NodeType not found: %v", err)
-		return
+		return false, err
 	}
 
 	if err := s.db.Unscoped().Where("node_type_refer = ?", node.ID).Delete(&nodeType_model.PropertyType{}).Error; err != nil {
@@ -53,7 +53,9 @@ func (s *NodeTypeService) DeleteNodeType(tid string) {
 
 	if err := s.db.Unscoped().Delete(&node).Error; err != nil {
 		log.Printf("❌ Failed at delete NodeType: %v", err)
+		return false, err
 	}
+	return true, nil
 }
 
 func (s *NodeTypeService) LoadSchema(path string, ch chan<- string) {

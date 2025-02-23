@@ -43,5 +43,10 @@ func (h *HelperHandler) FetchNodeType(c *gin.Context) {
 
 func (h *HelperHandler) DeleteNodeType(c *gin.Context) {
 	tid := c.Query("typeId")
-	h.nodeTypeService.DeleteNodeType(tid)
+	success, err := h.nodeTypeService.DeleteNodeType(tid)
+	if !success {
+		c.String(http.StatusOK, fmt.Sprintf("🎉 Delete nodeType: %s - %v", tid, err))
+		return
+	}
+	c.String(http.StatusOK, fmt.Sprintf("🎉 Delete nodeType: %s successfully!", tid))
 }
