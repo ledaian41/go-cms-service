@@ -178,7 +178,8 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 		log.Printf("❌ Commit transaction failed: %v", err)
 	}
 
-	if err := s.db.Save(&newNodeType).Error; err != nil {
+	newNodeType.ID = existing.ID
+	if err := s.db.Omit("PropertyTypes").Save(&newNodeType).Error; err != nil {
 		log.Printf("❌ Failed at update NodeType(%s): %v", newNodeType.TID, err)
 		return newNodeType.TID, err
 	}
