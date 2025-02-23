@@ -1,11 +1,12 @@
 package nodeType_service
 
 import (
+	"errors"
 	"fmt"
 	"go-product-service/pkg/nodeType/model"
 	"go-product-service/pkg/nodeType/utils"
 	"go-product-service/pkg/shared/dto"
-	shared_utils "go-product-service/pkg/shared/utils"
+	"go-product-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"log"
 	"sync"
@@ -22,7 +23,7 @@ func NewNodeTypeService(db *gorm.DB) *NodeTypeService {
 func (s *NodeTypeService) InitDatabase() {
 	err := s.db.AutoMigrate(&nodeType_model.NodeType{}, &nodeType_model.PropertyType{})
 	if err != nil {
-		log.Fatal("❌ Failed at AutoMigrate:", err)
+		log.Printf("❌ Failed at AutoMigrate: %v", err)
 	}
 	log.Println("🎉 NodeType - Database migrate successfully")
 }
@@ -30,13 +31,29 @@ func (s *NodeTypeService) InitDatabase() {
 func (s *NodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
 	var nodeTypes []nodeType_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Find(&nodeTypes).Error; err != nil {
-		log.Println("❌ Failed at query NodeTypes: %v", err)
+		log.Printf("❌ Failed at query NodeTypes: %v", err)
 	}
 	var dtos []shared_dto.NodeTypeDTO
 	for _, n := range nodeTypes {
 		dtos = append(dtos, n.NodeTypeDTO())
 	}
 	return &dtos
+}
+
+func (s *NodeTypeService) DeleteNodeType(tid string) {
+	var node nodeType_model.NodeType
+	if err := s.db.Where("tid = ?", tid).First(&node).Error; err != nil {
+		log.Printf("❌ NodeType not found: %v", err)
+		return
+	}
+
+	if err := s.db.Unscoped().Where("node_type_refer = ?", node.ID).Delete(&nodeType_model.PropertyType{}).Error; err != nil {
+		log.Printf("❌ Failed to delete PropertyType: %v", err)
+	}
+
+	if err := s.db.Unscoped().Delete(&node).Error; err != nil {
+		log.Printf("❌ Failed at delete NodeType: %v", err)
+	}
 }
 
 func (s *NodeTypeService) LoadSchema(path string, ch chan<- string) {
@@ -51,31 +68,20 @@ func (s *NodeTypeService) LoadSchema(path string, ch chan<- string) {
 }
 
 func (s *NodeTypeService) loadSchemaFile(path string, ch chan<- string) {
-	newNodeType, err := nodeType_utils.ReadSchemaJson(path)
+	nodeType, err := nodeType_utils.ReadSchemaJson(path)
 	if err != nil {
-		log.Println("❌ Failed at LoadSchema: %v", err)
+		log.Printf("❌ Failed at LoadSchema: %v", err)
 		close(ch)
 		return
 	}
-
-	var existing nodeType_model.NodeType
-	if err := s.db.Preload("PropertyTypes").Where("t_id = ?", newNodeType.TID).First(&existing).Error; err != nil {
-		tid, _ := s.createNewNodeType(newNodeType)
-		ch <- tid
-		close(ch)
-		return
-	}
-
-	tid, _ := s.updateNodeType(&existing, newNodeType)
-	ch <- tid
+	s.loadNodeTypeToDB(nodeType, ch)
 	close(ch)
-	return
 }
 
 func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 	nodeTypes, err := nodeType_utils.ReadSchemasFromDir(path)
 	if err != nil {
-		log.Println("❌ Failed at LoadSchema: %v", err)
+		log.Printf("❌ Failed at LoadSchema: %v", err)
 		close(ch)
 		return
 	}
@@ -85,14 +91,7 @@ func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 		wg.Add(1)
 		go func(nodeType *nodeType_model.NodeType) {
 			defer wg.Done()
-			var existing nodeType_model.NodeType
-			if err := s.db.Preload("PropertyTypes").Where("t_id = ?", nodeType.TID).First(&existing).Error; err != nil {
-				tid, _ := s.createNewNodeType(nodeType)
-				ch <- tid
-			} else {
-				tid, _ := s.updateNodeType(&existing, nodeType)
-				ch <- tid
-			}
+			s.loadNodeTypeToDB(nodeType, ch)
 		}(nodeType)
 	}
 	go func() {
@@ -101,26 +100,86 @@ func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 	}()
 }
 
+func (s *NodeTypeService) loadNodeTypeToDB(nodeType *nodeType_model.NodeType, ch chan<- string) {
+	var existing nodeType_model.NodeType
+	if err := s.db.Preload("PropertyTypes").Where("tid = ?", nodeType.TID).First(&existing).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			tid, _ := s.createNewNodeType(nodeType)
+			ch <- tid
+		} else {
+			log.Printf("❌ Error loading record: %v", err)
+		}
+		return
+	}
+	tid, _ := s.updateNodeType(&existing, nodeType)
+	ch <- tid
+}
+
 func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (string, error) {
 	if err := s.db.Create(&nodeType).Error; err != nil {
-		log.Println("❌ Failed at save NodeType: %v", err)
+		log.Printf("❌ Failed at save NodeType: %v", err)
 		return nodeType.TID, err
 	}
-	log.Println(fmt.Sprintf("🎉 Helper - Load new %s schema successfully!", nodeType.TID))
+	log.Printf("🎉 Helper - Load new %s schema successfully!", nodeType.TID)
 	return nodeType.TID, nil
 }
 
 func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
-	existing.PropertyTypes = newNodeType.PropertyTypes
-	if err := s.db.Model(&existing).Association("PropertyTypes").Replace(newNodeType.PropertyTypes); err != nil {
-		log.Println("❌ Failed at update PropertyTypes: %v", err)
-		return existing.TID, err
+	var currentPTs []*nodeType_model.PropertyType
+	if err := s.db.Model(&existing).Association("PropertyTypes").Find(&currentPTs); err != nil {
+		log.Printf("❌ Failed at query PropertyTypes: %v", err)
+		return newNodeType.TID, nil
 	}
 
-	if err := s.db.Save(&existing).Error; err != nil {
-		log.Println("❌ Failed at update NodeType: %v", err)
-		return existing.TID, err
+	currentMap := make(map[string]*nodeType_model.PropertyType)
+	for _, pt := range currentPTs {
+		currentMap[pt.PID] = pt
 	}
-	log.Println(fmt.Sprintf("🎉 Helper - Load %s schema successfully!", existing.TID))
-	return existing.TID, nil
+
+	newMap := make(map[string]*nodeType_model.PropertyType)
+	var toCreate []*nodeType_model.PropertyType
+	for _, pt := range newNodeType.PropertyTypes {
+		pt.NodeTypeRefer = existing.ID
+		if currentMap[pt.PID] != nil {
+			newMap[pt.PID] = pt
+		} else {
+			toCreate = append(toCreate, pt)
+		}
+	}
+
+	tx := s.db.Begin()
+	for pid, pt := range currentMap {
+		if newPT, ok := newMap[pid]; ok {
+			pt.ValueType = newPT.ValueType
+			if err := tx.Save(pt).Error; err != nil {
+				tx.Rollback()
+				log.Printf("failed to update PropertyType (pid=%s): %v", pid, err)
+				return newNodeType.TID, nil
+			}
+		} else {
+			if err := tx.Unscoped().Delete(pt).Error; err != nil {
+				tx.Rollback()
+				log.Printf("failed to delete PropertyType (pid=%s): %v", pid, err)
+				return newNodeType.TID, nil
+			}
+		}
+	}
+	for _, pt := range toCreate {
+		fmt.Println("create new PropertyType", pt.PID)
+		if err := tx.Create(pt).Error; err != nil {
+			tx.Rollback()
+			log.Printf("❌ Failed to create new PropertyType: %v", err)
+			return newNodeType.TID, nil
+		}
+	}
+	if err := tx.Commit().Error; err != nil {
+		log.Printf("❌ Commit transaction failed: %v", err)
+	}
+
+	if err := s.db.Save(&newNodeType).Error; err != nil {
+		log.Printf("❌ Failed at update NodeType(%s): %v", newNodeType.TID, err)
+		return newNodeType.TID, err
+	}
+	log.Printf("🎉 Helper - Load %s schema successfully!", newNodeType.TID)
+	return newNodeType.TID, nil
 }

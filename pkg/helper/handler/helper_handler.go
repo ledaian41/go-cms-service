@@ -29,7 +29,7 @@ func (h *HelperHandler) LoadSchema(c *gin.Context) {
 	for tid := range messageCh {
 		_, err := c.Writer.Write([]byte(fmt.Sprintf("🎉 Load nodeType: %s successfully!\n", tid)))
 		if err != nil {
-			log.Println("❌ Error writing to response:", err)
+			log.Printf("❌ Error writing to response: %v", err)
 			break
 		}
 		c.Writer.Flush()
@@ -39,4 +39,9 @@ func (h *HelperHandler) LoadSchema(c *gin.Context) {
 func (h *HelperHandler) FetchNodeType(c *gin.Context) {
 	nodeTypes := h.nodeTypeService.FetchNodeTypes()
 	c.JSON(http.StatusOK, gin.H{"items": nodeTypes})
+}
+
+func (h *HelperHandler) DeleteNodeType(c *gin.Context) {
+	tid := c.Query("typeId")
+	h.nodeTypeService.DeleteNodeType(tid)
 }

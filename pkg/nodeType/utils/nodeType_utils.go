@@ -30,7 +30,7 @@ func ReadSchemasFromDir(path string) ([]*nodeType_model.NodeType, error) {
 	}
 
 	if len(files) == 0 {
-		log.Println("No files found in directory: ", path)
+		log.Printf("No files found in directory: %s", path)
 		return nil, nil
 	}
 

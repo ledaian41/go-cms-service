@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ func LoadConfig() *AppConfig {
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("❌ Error loading .env file: %v", err)
+		log.Printf("❌ Error loading .env file: %v", err)
 	}
 
 	// Create and return AppConfig instance

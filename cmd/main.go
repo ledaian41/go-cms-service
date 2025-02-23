@@ -18,6 +18,7 @@ func main() {
 	helperHandler := helper_handler.NewHelperHandler(nodeTypeService)
 	r.GET("helper/loadSchema", helperHandler.LoadSchema)
 	r.GET("helper/nodeType", helperHandler.FetchNodeType)
+	r.GET("helper/nodeType/delete", helperHandler.DeleteNodeType)
 
 	r.Run("localhost:8080")
 }

@@ -6,7 +6,7 @@
       "valueType": "STRING"
     },
     {
-      "pid": "price",
+      "pid": "price2",
       "valueType": "DOUBLE"
     }
   ]
