@@ -139,6 +139,12 @@ func (s *NodeTypeService) createNewTable(nodeType *nodeType_model.NodeType) erro
 	return s.db.Table(nodeType.TID).AutoMigrate(tableInstance)
 }
 
+func (s *NodeTypeService) deleteColumn(tid, pid string) error {
+	log.Printf("Delete column: %s in table %s", pid, tid)
+	sql := fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s", tid, pid)
+	return s.db.Exec(sql).Error
+}
+
 func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
 	var currentPTs []*nodeType_model.PropertyType
 	if err := s.db.Model(&existing).Association("PropertyTypes").Find(&currentPTs); err != nil {
@@ -162,33 +168,44 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 		}
 	}
 
-	tx := s.db.Begin()
 	for pid, pt := range currentMap {
 		if newPT, ok := newMap[pid]; ok {
+			if pt.ValueType != newPT.ValueType {
+				if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
+					log.Printf("❌ Error update column %s: %v", pt.PID, err)
+					return newNodeType.TID, nil
+				}
+			}
 			pt.ValueType = newPT.ValueType
-			if err := tx.Save(pt).Error; err != nil {
-				tx.Rollback()
-				log.Printf("failed to update PropertyType (pid=%s): %v", pid, err)
+			if err := s.db.Save(pt).Error; err != nil {
+				log.Printf("❌ Failed to update PropertyType (pid=%s): %v", pid, err)
 				return newNodeType.TID, nil
 			}
 		} else {
-			if err := tx.Unscoped().Delete(pt).Error; err != nil {
-				tx.Rollback()
-				log.Printf("failed to delete PropertyType (pid=%s): %v", pid, err)
+			if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
+				log.Printf("❌ Error delete column %s: %v\n", pt.PID, err)
+				return newNodeType.TID, nil
+			}
+			if err := s.db.Unscoped().Delete(pt).Error; err != nil {
+				log.Printf("❌ Failed to delete PropertyType (pid=%s): %v", pid, err)
 				return newNodeType.TID, nil
 			}
 		}
 	}
+
+	dynamicType := dynamic_struct.CreateDynamicStruct(newNodeType)
+	dynamicValue := reflect.New(dynamicType).Interface()
+
+	if err := s.db.Table(newNodeType.TID).AutoMigrate(dynamicValue); err != nil {
+		log.Printf("❌ Failed at AutoMigrate: %v", err)
+		return newNodeType.TID, nil
+	}
 	for _, pt := range toCreate {
 		fmt.Println("create new PropertyType", pt.PID)
-		if err := tx.Create(pt).Error; err != nil {
-			tx.Rollback()
+		if err := s.db.Create(pt).Error; err != nil {
 			log.Printf("❌ Failed to create new PropertyType: %v", err)
 			return newNodeType.TID, nil
 		}
-	}
-	if err := tx.Commit().Error; err != nil {
-		log.Printf("❌ Commit transaction failed: %v", err)
 	}
 
 	newNodeType.ID = existing.ID

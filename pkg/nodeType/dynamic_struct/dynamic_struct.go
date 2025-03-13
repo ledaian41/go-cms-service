@@ -22,7 +22,7 @@ func mapValueType(valueType string) reflect.Type {
 	}
 }
 
-func mapValueTypeToSQL(valueType string) string {
+func MapValueTypeToSQL(valueType string) string {
 	switch valueType {
 	case "STRING":
 		return "text"
@@ -58,7 +58,7 @@ func CreateDynamicStruct(nodeType *nodeType_model.NodeType) reflect.Type {
 		field := reflect.StructField{
 			Name: exportedName,
 			Type: mapValueType(pt.ValueType),
-			Tag:  reflect.StructTag(fmt.Sprintf(`gorm:"type:%s"`, mapValueTypeToSQL(pt.ValueType))),
+			Tag:  reflect.StructTag(fmt.Sprintf(`gorm:"type:%s"`, MapValueTypeToSQL(pt.ValueType))),
 		}
 		fields = append(fields, field)
 	}
