@@ -3,12 +3,14 @@ package nodeType_service
 import (
 	"errors"
 	"fmt"
+	"go-cms-service/pkg/nodeType/dynamic_struct"
 	"go-cms-service/pkg/nodeType/model"
 	"go-cms-service/pkg/nodeType/utils"
 	"go-cms-service/pkg/shared/dto"
 	"go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"log"
+	"reflect"
 	"sync"
 )
 
@@ -118,12 +120,23 @@ func (s *NodeTypeService) loadNodeTypeToDB(nodeType *nodeType_model.NodeType, ch
 }
 
 func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (string, error) {
+	if err := s.createNewTable(nodeType); err != nil {
+		log.Printf("❌ Failed at create Table: %v", err)
+		return nodeType.TID, err
+	}
 	if err := s.db.Create(&nodeType).Error; err != nil {
 		log.Printf("❌ Failed at save NodeType: %v", err)
 		return nodeType.TID, err
 	}
 	log.Printf("🎉 Helper - Load new %s schema successfully!", nodeType.TID)
 	return nodeType.TID, nil
+}
+
+func (s *NodeTypeService) createNewTable(nodeType *nodeType_model.NodeType) error {
+	dynamicType := dynamic_struct.CreateDynamicStruct(nodeType)
+	tableInstance := reflect.New(dynamicType).Interface()
+
+	return s.db.Table(nodeType.TID).AutoMigrate(tableInstance)
 }
 
 func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
