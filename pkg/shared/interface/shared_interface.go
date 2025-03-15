@@ -12,6 +12,6 @@ type NodeTypeServiceInterface interface {
 	FetchRecords(tid string) (*[]map[string]interface{}, error)
 	FetchRecord(tid string, id string) (*map[string]interface{}, error)
 	CreateRecord(tid string, data map[string]interface{}) (*map[string]interface{}, error)
-	UpdateRecord(tid string) (*map[string]interface{}, error)
+	UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error)
 	DeleteRecord(tid string, id string) error
 }

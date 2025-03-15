@@ -26,7 +26,7 @@ func main() {
 	r.GET("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ListApi)
 	r.GET("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ReadApi)
 	r.POST("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.CreateApi)
-	r.PATCH("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.UpdateApi)
+	r.PATCH("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.UpdateApi)
 	r.DELETE("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.DeleteApi)
 
 	r.Run("localhost:8080")

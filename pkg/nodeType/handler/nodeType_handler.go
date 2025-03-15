@@ -65,10 +65,40 @@ func (n *NodeType) CreateApi(c *gin.Context) {
 
 func (n *NodeType) UpdateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
-	c.JSON(http.StatusOK, gin.H{"items": "Update Api", "typeId": typeId})
+	id := c.Param("id")
+	var data map[string]interface{}
+	if err := c.ShouldBindJSON(&data); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	record, err := n.nodeTypeService.FetchRecord(typeId, id)
+	if err != nil || *record == nil {
+		c.String(http.StatusNotFound, "not found")
+		return
+	}
+
+	updateNode, err := n.nodeTypeService.UpdateRecord(typeId, id, data)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, updateNode)
 }
 
 func (n *NodeType) DeleteApi(c *gin.Context) {
 	typeId := c.Param("typeId")
-	c.JSON(http.StatusOK, gin.H{"items": "Delete Api", "typeId": typeId})
+	id := c.Param("id")
+
+	record, err := n.nodeTypeService.FetchRecord(typeId, id)
+	if err != nil || *record == nil {
+		c.String(http.StatusNotFound, "not found")
+		return
+	}
+
+	if err = n.nodeTypeService.DeleteRecord(typeId, id); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }

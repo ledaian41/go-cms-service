@@ -239,10 +239,15 @@ func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) 
 	return &data, nil
 }
 
-func (s *NodeTypeService) UpdateRecord(tid string) (*map[string]interface{}, error) {
-	return nil, nil
+func (s *NodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error) {
+	delete(data, "id")
+	result := s.db.Table(tid).Where("id = ?", id).Updates(&data)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &data, nil
 }
 
 func (s *NodeTypeService) DeleteRecord(tid string, id string) error {
-	return nil
+	return s.db.Table(tid).Where("id = ?", id).Delete(nil).Error
 }
