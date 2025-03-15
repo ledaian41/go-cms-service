@@ -2,25 +2,12 @@ package dynamic_struct
 
 import (
 	"fmt"
+	"github.com/bwmarrin/snowflake"
 	"go-cms-service/pkg/nodeType/model"
-	"reflect"
+	"hash/fnv"
+	"math/big"
 	"strings"
 )
-
-func mapValueType(valueType string) reflect.Type {
-	switch valueType {
-	case "STRING":
-		return reflect.TypeOf("")
-	case "INT":
-		return reflect.TypeOf(0)
-	case "DOUBLE":
-		return reflect.TypeOf(0.0)
-	case "BOOLEAN":
-		return reflect.TypeOf(true)
-	default:
-		return reflect.TypeOf(nil) // Giá trị không hợp lệ
-	}
-}
 
 func MapValueTypeToSQL(valueType string) string {
 	switch valueType {
@@ -28,40 +15,35 @@ func MapValueTypeToSQL(valueType string) string {
 		return "text"
 	case "INT":
 		return "integer"
-	case "DOUBLE":
+	case "DOUBLE", "FLOAT":
 		return "real"
 	case "BOOLEAN":
-		return "boolean"
+		return "integer"
 	default:
 		return "text"
 	}
 }
 
-func toExportedName(name string) string {
-	if name == "" {
-		return ""
-	}
-	return strings.ToUpper(string(name[0])) + name[1:]
+func generateSnowflakeID() int64 {
+	node, _ := snowflake.NewNode(1)
+	return node.Generate().Int64()
 }
 
-func CreateDynamicStruct(nodeType *nodeType_model.NodeType) reflect.Type {
-	fields := []reflect.StructField{
-		{
-			Name: "ID",
-			Type: reflect.TypeOf(""),
-			Tag:  reflect.StructTag(`gorm:"primaryKey;type:text"`),
-		},
-	}
+func GenerateID() string {
+	id := generateSnowflakeID()
+	h := fnv.New32a()
+	h.Write([]byte(fmt.Sprintf("%d", id)))
+	hashed := h.Sum32()
+	return new(big.Int).SetUint64(uint64(hashed)).Text(36)
+}
+
+func CreateDynamicTable(nodeType *nodeType_model.NodeType) string {
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, ", nodeType.TID)
+	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {
-		exportedName := toExportedName(pt.PID)
-		field := reflect.StructField{
-			Name: exportedName,
-			Type: mapValueType(pt.ValueType),
-			Tag:  reflect.StructTag(fmt.Sprintf(`gorm:"type:%s"`, MapValueTypeToSQL(pt.ValueType))),
-		}
-		fields = append(fields, field)
+		columnDefs = append(columnDefs, fmt.Sprintf("%s %s", pt.PID, MapValueTypeToSQL(pt.ValueType)))
 	}
-
-	return reflect.StructOf(fields)
+	query += strings.Join(columnDefs, ", ") + ");"
+	return query
 }

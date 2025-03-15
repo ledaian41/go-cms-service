@@ -10,7 +10,6 @@ import (
 	"go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"log"
-	"reflect"
 	"sync"
 )
 
@@ -133,10 +132,7 @@ func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (
 }
 
 func (s *NodeTypeService) createNewTable(nodeType *nodeType_model.NodeType) error {
-	dynamicType := dynamic_struct.CreateDynamicStruct(nodeType)
-	tableInstance := reflect.New(dynamicType).Interface()
-
-	return s.db.Table(nodeType.TID).AutoMigrate(tableInstance)
+	return s.db.Exec(dynamic_struct.CreateDynamicTable(nodeType)).Error
 }
 
 func (s *NodeTypeService) deleteColumn(tid, pid string) error {
@@ -193,10 +189,7 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 		}
 	}
 
-	dynamicType := dynamic_struct.CreateDynamicStruct(newNodeType)
-	dynamicValue := reflect.New(dynamicType).Interface()
-
-	if err := s.db.Table(newNodeType.TID).AutoMigrate(dynamicValue); err != nil {
+	if err := s.db.Exec(dynamic_struct.CreateDynamicTable(newNodeType)).Error; err != nil {
 		log.Printf("❌ Failed at AutoMigrate: %v", err)
 		return newNodeType.TID, nil
 	}
@@ -215,4 +208,41 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 	}
 	log.Printf("🎉 Helper - Load %s schema successfully!", newNodeType.TID)
 	return newNodeType.TID, nil
+}
+
+func (s *NodeTypeService) CheckNodeTypeExist(tid string) bool {
+	return s.db.Migrator().HasTable(tid)
+}
+
+func (s *NodeTypeService) FetchRecords(tid string) (*[]map[string]interface{}, error) {
+	var result []map[string]interface{}
+	if err := s.db.Table(tid).Find(&result).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *NodeTypeService) FetchRecord(tid string, id string) (*map[string]interface{}, error) {
+	var result map[string]interface{}
+	if err := s.db.Table(tid).Find(&result, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) (*map[string]interface{}, error) {
+	data["id"] = dynamic_struct.GenerateID()
+	if result := s.db.Table(tid).Create(&data); result.Error != nil {
+		return &data, result.Error
+	}
+	delete(data, "@id")
+	return &data, nil
+}
+
+func (s *NodeTypeService) UpdateRecord(tid string) (*map[string]interface{}, error) {
+	return nil, nil
+}
+
+func (s *NodeTypeService) DeleteRecord(tid string, id string) error {
+	return nil
 }
