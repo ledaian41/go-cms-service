@@ -227,6 +227,9 @@ func (s *NodeTypeService) FetchRecord(tid string, id string) (*map[string]interf
 	if err := s.db.Table(tid).Find(&result, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
 	return &result, nil
 }
 
