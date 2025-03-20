@@ -65,8 +65,8 @@ func (m *MockNodeTypeService) CreateRecord(tid string, data map[string]interface
 }
 
 func (m *MockNodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called(tid, id, data)
+	return args.Get(0).(*map[string]interface{}), args.Error(1)
 }
 
 func (m *MockNodeTypeService) DeleteRecord(tid string, id string) error {
@@ -213,10 +213,10 @@ func TestCreateApi_Success(t *testing.T) {
 	mockService := new(MockNodeTypeService)
 
 	requestBody := `{"name": "New Product", "price": 300000}`
-	expectedData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
-	expectedResponse := map[string]interface{}{"id": 1, "name": "New Product", "price": 300000}
+	requestData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
+	createdData := map[string]interface{}{"id": 1, "name": "New Product", "price": 300000}
 
-	mockService.On("CreateRecord", "product", expectedData).Return(&expectedResponse, nil)
+	mockService.On("CreateRecord", "product", requestData).Return(&createdData, nil)
 
 	handler := NewNodeTypeHandler(mockService)
 
@@ -232,7 +232,6 @@ func TestCreateApi_Success(t *testing.T) {
 	handler.CreateApi(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-
 	expectedJSON := `{"id":1,"name":"New Product","price":300000}`
 	assert.JSONEq(t, expectedJSON, w.Body.String())
 
@@ -265,8 +264,8 @@ func TestCreateApi_BadRequest(t *testing.T) {
 
 	mockService := new(MockNodeTypeService)
 	requestBody := `{"name": "New Product", "price": 300000}`
-	expectedData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
-	mockService.On("CreateRecord", "product", expectedData).Return(nil, errors.New("db error"))
+	requestData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
+	mockService.On("CreateRecord", "product", requestData).Return(nil, errors.New("db error"))
 
 	handler := NewNodeTypeHandler(mockService)
 
@@ -281,4 +280,29 @@ func TestCreateApi_BadRequest(t *testing.T) {
 	assert.Equal(t, "db error", w.Body.String())
 
 	mockService.AssertExpectations(t)
+}
+
+func TestUpdateApi_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockService := new(MockNodeTypeService)
+	requestBody := `{"name": "Updated Product", "price": 300000}`
+	requestChangeData := map[string]interface{}{"name": "Updated Product", "price": float64(300000)}
+	mockCurrentData := map[string]interface{}{"id": 1, "name": "New Product", "price": 200000}
+	updatedData := map[string]interface{}{"id": 1, "name": "Updated Product", "price": 300000}
+	mockService.On("FetchRecord", "product", "1").Return(&mockCurrentData, nil)
+	mockService.On("UpdateRecord", "product", "1", requestChangeData).Return(&updatedData, nil)
+
+	handler := NewNodeTypeHandler(mockService)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPatch, "/product/1", strings.NewReader(requestBody))
+	c.Params = gin.Params{{Key: "typeId", Value: "product"}, {Key: "id", Value: "1"}}
+
+	handler.UpdateApi(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	expectedJSON := `{"id":1,"name":"Updated Product","price":300000}`
+	assert.JSONEq(t, expectedJSON, w.Body.String())
 }
