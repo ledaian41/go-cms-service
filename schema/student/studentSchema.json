@@ -1,0 +1,21 @@
+{
+  "tid": "student",
+  "propertyTypes": [
+    {
+      "pid": "name",
+      "valueType": "STRING"
+    },
+    {
+      "pid": "age",
+      "valueType": "INT"
+    },
+    {
+      "pid": "email",
+      "valueType": "STRING"
+    },
+    {
+      "pid": "major",
+      "valueType": "STRING"
+    }
+  ]
+}
