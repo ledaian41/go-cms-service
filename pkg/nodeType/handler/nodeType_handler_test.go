@@ -8,6 +8,7 @@ import (
 	"go-cms-service/pkg/shared/dto"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -56,8 +57,11 @@ func (m *MockNodeTypeService) FetchRecord(tid string, id string) (*map[string]in
 }
 
 func (m *MockNodeTypeService) CreateRecord(tid string, data map[string]interface{}) (*map[string]interface{}, error) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called(tid, data)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*map[string]interface{}), args.Error(1)
 }
 
 func (m *MockNodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error) {
@@ -86,8 +90,9 @@ func TestListApi_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 
 	c.Request, _ = http.NewRequest(http.MethodGet, "/product", nil)
-
-	c.Params = append(c.Params, gin.Param{Key: "typeId", Value: "product"})
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+	}
 
 	handler.ListApi(c)
 
@@ -110,7 +115,9 @@ func TestListApi_Error(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 
 	c.Request, _ = http.NewRequest(http.MethodGet, "/product", nil)
-	c.Params = gin.Params{{Key: "typeId", Value: "product"}}
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+	}
 
 	handler.ListApi(c)
 
@@ -136,8 +143,10 @@ func TestReadApi_Success(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 
 	c.Request, _ = http.NewRequest(http.MethodPost, "/product/1", nil)
-	c.Params = append(c.Params, gin.Param{Key: "typeId", Value: "product"})
-	c.Params = append(c.Params, gin.Param{Key: "id", Value: "1"})
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+		{Key: "id", Value: "1"},
+	}
 
 	handler.ReadApi(c)
 
@@ -160,13 +169,15 @@ func TestReadApi_BadRequest(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 
 	c.Request, _ = http.NewRequest(http.MethodPost, "/product/1", nil)
-	c.Params = append(c.Params, gin.Param{Key: "typeId", Value: "product"})
-	c.Params = append(c.Params, gin.Param{Key: "id", Value: "1"})
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+		{Key: "id", Value: "1"},
+	}
 
 	handler.ReadApi(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Equal(t, w.Body.String(), "db error")
+	assert.Equal(t, "db error", w.Body.String())
 
 	mockService.AssertExpectations(t)
 }
@@ -183,13 +194,91 @@ func TestReadApi_NotFound(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 
 	c.Request, _ = http.NewRequest(http.MethodGet, "/product/1", nil)
-	c.Params = append(c.Params, gin.Param{Key: "typeId", Value: "product"})
-	c.Params = append(c.Params, gin.Param{Key: "id", Value: "1"})
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+		{Key: "id", Value: "1"},
+	}
 
 	handler.ReadApi(c)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
-	//assert.Equal(t, w.Body.String(), "not found")
+	assert.Equal(t, w.Body.String(), "not found")
+
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateApi_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockService := new(MockNodeTypeService)
+
+	requestBody := `{"name": "New Product", "price": 300000}`
+	expectedData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
+	expectedResponse := map[string]interface{}{"id": 1, "name": "New Product", "price": 300000}
+
+	mockService.On("CreateRecord", "product", expectedData).Return(&expectedResponse, nil)
+
+	handler := NewNodeTypeHandler(mockService)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	c.Request, _ = http.NewRequest(http.MethodPost, "/product", strings.NewReader(requestBody))
+	c.Request.Header.Set("Content-Type", "application/json")
+	c.Params = gin.Params{
+		{Key: "typeId", Value: "product"},
+	}
+
+	handler.CreateApi(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	expectedJSON := `{"id":1,"name":"New Product","price":300000}`
+	assert.JSONEq(t, expectedJSON, w.Body.String())
+
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateApi_InvalidRequestData(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockService := new(MockNodeTypeService)
+	handler := NewNodeTypeHandler(mockService)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	invalidRequestBody := `{"name": "New Product", price: 300000}` // invalid body, missing "
+	c.Request, _ = http.NewRequest(http.MethodPost, "/product", strings.NewReader(invalidRequestBody))
+	c.Params = gin.Params{{Key: "typeId", Value: "product"}}
+
+	handler.CreateApi(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "invalid character")
+
+	mockService.AssertExpectations(t)
+}
+
+func TestCreateApi_BadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockService := new(MockNodeTypeService)
+	requestBody := `{"name": "New Product", "price": 300000}`
+	expectedData := map[string]interface{}{"name": "New Product", "price": float64(300000)}
+	mockService.On("CreateRecord", "product", expectedData).Return(nil, errors.New("db error"))
+
+	handler := NewNodeTypeHandler(mockService)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest(http.MethodPost, "/product", strings.NewReader(requestBody))
+	c.Params = gin.Params{{Key: "typeId", Value: "product"}}
+
+	handler.CreateApi(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, "db error", w.Body.String())
 
 	mockService.AssertExpectations(t)
 }
