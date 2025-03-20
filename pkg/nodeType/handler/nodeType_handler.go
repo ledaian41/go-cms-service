@@ -38,7 +38,7 @@ func (n *NodeType) ReadApi(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	if *result == nil {
+	if result == nil {
 		c.String(http.StatusNotFound, "not found")
 		return
 	}
@@ -73,7 +73,7 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 	}
 
 	record, err := n.nodeTypeService.FetchRecord(typeId, id)
-	if err != nil || *record == nil {
+	if err != nil || record == nil {
 		c.String(http.StatusNotFound, "not found")
 		return
 	}
@@ -91,7 +91,7 @@ func (n *NodeType) DeleteApi(c *gin.Context) {
 	id := c.Param("id")
 
 	record, err := n.nodeTypeService.FetchRecord(typeId, id)
-	if err != nil || *record == nil {
+	if err != nil || record == nil {
 		c.String(http.StatusNotFound, "not found")
 		return
 	}
