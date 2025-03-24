@@ -3,8 +3,8 @@ package nodeType_service
 import (
 	"errors"
 	"fmt"
-	"go-cms-service/pkg/nodeType/dynamic_struct"
 	"go-cms-service/pkg/nodeType/model"
+	"go-cms-service/pkg/nodeType/sql_helper"
 	"go-cms-service/pkg/nodeType/utils"
 	"go-cms-service/pkg/shared/dto"
 	"go-cms-service/pkg/shared/utils"
@@ -119,7 +119,7 @@ func (s *NodeTypeService) loadNodeTypeToDB(nodeType *nodeType_model.NodeType, ch
 }
 
 func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (string, error) {
-	if err := s.createNewTable(nodeType); err != nil {
+	if err := s.db.Exec(sql_helper.QueryCreateNewTable(nodeType)).Error; err != nil {
 		log.Printf("❌ Failed at create Table: %v", err)
 		return nodeType.TID, err
 	}
@@ -131,14 +131,9 @@ func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (
 	return nodeType.TID, nil
 }
 
-func (s *NodeTypeService) createNewTable(nodeType *nodeType_model.NodeType) error {
-	return s.db.Exec(dynamic_struct.CreateDynamicTable(nodeType)).Error
-}
-
 func (s *NodeTypeService) deleteColumn(tid, pid string) error {
 	log.Printf("Delete column: %s in table %s", pid, tid)
-	sql := fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s", tid, pid)
-	return s.db.Exec(sql).Error
+	return s.db.Exec(sql_helper.QueryDeleteColumnFromTable(tid, pid)).Error
 }
 
 func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
@@ -189,11 +184,11 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 		}
 	}
 
-	if err := s.db.Exec(dynamic_struct.CreateDynamicTable(newNodeType)).Error; err != nil {
-		log.Printf("❌ Failed at AutoMigrate: %v", err)
-		return newNodeType.TID, nil
-	}
 	for _, pt := range toCreate {
+		if err := s.db.Exec(sql_helper.QueryAddColumnToTable(newNodeType.TID, pt)).Error; err != nil {
+			log.Printf("❌ Failed at AutoMigrate: %v", err)
+			return newNodeType.TID, nil
+		}
 		fmt.Println("create new PropertyType", pt.PID)
 		if err := s.db.Create(pt).Error; err != nil {
 			log.Printf("❌ Failed to create new PropertyType: %v", err)
@@ -234,7 +229,7 @@ func (s *NodeTypeService) FetchRecord(tid string, id string) (*map[string]interf
 }
 
 func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) (*map[string]interface{}, error) {
-	data["id"] = dynamic_struct.GenerateID()
+	data["id"] = sql_helper.GenerateID()
 	if result := s.db.Table(tid).Create(&data); result.Error != nil {
 		return &data, result.Error
 	}
