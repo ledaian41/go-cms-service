@@ -43,3 +43,7 @@ func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
 func QueryDeleteColumnFromTable(tid, pid string) string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s", tid, pid)
 }
+
+func QueryTableColumns(tid string) string {
+	return fmt.Sprintf("PRAGMA table_info(%s)", tid)
+}

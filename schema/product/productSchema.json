@@ -6,8 +6,16 @@
       "valueType": "STRING"
     },
     {
+      "pid": "description",
+      "valueType": "STRING"
+    },
+    {
       "pid": "price",
       "valueType": "DOUBLE"
+    },
+    {
+      "pid": "image",
+      "valueType": "STRING"
     }
   ]
 }

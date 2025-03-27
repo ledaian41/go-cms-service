@@ -6,6 +6,7 @@ import (
 	"go-cms-service/middleware"
 	"go-cms-service/pkg/db"
 	"go-cms-service/pkg/helper/handler"
+	"go-cms-service/pkg/helper/service"
 	"go-cms-service/pkg/nodeType/handler"
 	"go-cms-service/pkg/nodeType/service"
 )
@@ -17,8 +18,10 @@ func main() {
 
 	r := gin.Default()
 
-	helperHandler := helper_handler.NewHelperHandler(nodeTypeService)
+	helperService := helper_service.NewHelperService(db)
+	helperHandler := helper_handler.NewHelperHandler(nodeTypeService, helperService)
 	r.GET("helper/loadSchema", helperHandler.LoadSchema)
+	r.GET("helper/loadData", helperHandler.LoadData)
 	r.GET("helper/nodeType", helperHandler.FetchNodeType)
 	r.GET("helper/nodeType/delete", helperHandler.DeleteNodeType)
 

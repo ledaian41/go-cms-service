@@ -15,3 +15,7 @@ type NodeTypeServiceInterface interface {
 	UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error)
 	DeleteRecord(tid string, id string) error
 }
+
+type HelperServiceInterface interface {
+	LoadJsonData(filePath string, ch chan<- string)
+}
