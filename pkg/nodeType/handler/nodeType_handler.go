@@ -48,10 +48,22 @@ func (n *NodeType) ReadApi(c *gin.Context) {
 func (n *NodeType) CreateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 
-	var data map[string]interface{}
-	if err := c.ShouldBindJSON(&data); err != nil {
+	data := make(map[string]interface{})
+	form, err := c.MultipartForm()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	for key, values := range form.Value {
+		if len(values) > 0 {
+			data[key] = values[0]
+		}
+	}
+	for key, files := range form.File {
+		if len(files) > 0 {
+			data[key] = files[0]
+		}
 	}
 
 	newNode, err := n.nodeTypeService.CreateRecord(typeId, data)
@@ -66,10 +78,23 @@ func (n *NodeType) CreateApi(c *gin.Context) {
 func (n *NodeType) UpdateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")
-	var data map[string]interface{}
-	if err := c.ShouldBindJSON(&data); err != nil {
+
+	data := make(map[string]interface{})
+	form, err := c.MultipartForm()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	for key, values := range form.Value {
+		if len(values) > 0 {
+			data[key] = values[0]
+		}
+	}
+	for key, files := range form.File {
+		if len(files) > 0 {
+			data[key] = files[0]
+		}
 	}
 
 	record, err := n.nodeTypeService.FetchRecord(typeId, id)
