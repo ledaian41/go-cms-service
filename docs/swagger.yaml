@@ -1,0 +1,168 @@
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A CMS API service.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Go CMS API
+  version: "1.0"
+paths:
+  /{typeId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all nodes of a specific type
+      parameters:
+      - description: Type ID
+        in: path
+        name: typeId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: List all nodes by type
+      tags:
+      - NodeType
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new node with form data
+      parameters:
+      - description: Type ID
+        in: path
+        name: typeId
+        required: true
+        type: string
+      - description: Node title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Node content
+        in: formData
+        name: content
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Create new node
+      tags:
+      - NodeType
+  /{typeId}/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a specific node
+      parameters:
+      - description: Type ID
+        in: path
+        name: typeId
+        required: true
+        type: string
+      - description: Node ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Delete node
+      tags:
+      - NodeType
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information of a specific node
+      parameters:
+      - description: Type ID
+        in: path
+        name: typeId
+        required: true
+        type: string
+      - description: Node ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Get node details
+      tags:
+      - NodeType
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update node information
+      parameters:
+      - description: Type ID
+        in: path
+        name: typeId
+        required: true
+        type: string
+      - description: Node ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Node title
+        in: formData
+        name: title
+        type: string
+      - description: Node content
+        in: formData
+        name: content
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update existing node
+      tags:
+      - NodeType
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

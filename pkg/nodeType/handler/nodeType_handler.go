@@ -22,6 +22,16 @@ func (n *NodeType) checkTypeId(typeId string) error {
 	return fmt.Errorf("%s does not exist", typeId)
 }
 
+// ListApi godoc
+// @Summary List all nodes by type
+// @Description Get all nodes of a specific type
+// @Tags NodeType
+// @Accept json
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Success 200
+// @Failure 400
+// @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
 	result, err := n.nodeTypeService.FetchRecords(c.Param("typeId"))
 	if err != nil {
@@ -32,6 +42,18 @@ func (n *NodeType) ListApi(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// ReadApi godoc
+// @Summary	Get node details
+// @Description Get detailed information of a specific node
+// @Tags	NodeType
+// @Accept	json
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Param id path string true "Node ID"
+// @Success 200
+// @Failure 400
+// @Failure 404
+// @Router /{typeId}/{id} [get]
 func (n *NodeType) ReadApi(c *gin.Context) {
 	result, err := n.nodeTypeService.FetchRecord(c.Param("typeId"), c.Param("id"))
 	if err != nil {
@@ -45,6 +67,19 @@ func (n *NodeType) ReadApi(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// CreateApi godoc
+// @Summary Create new node
+// @Description Create a new node with form data
+// @Tags NodeType
+// @Accept multipart/form-data
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Param title formData string true "Node title"
+// @Param content formData string false "Node content"
+// @Param image formData file false "Image file"
+// @Success 200
+// @Failure 400
+// @Router /{typeId} [post]
 func (n *NodeType) CreateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 
@@ -75,6 +110,21 @@ func (n *NodeType) CreateApi(c *gin.Context) {
 	c.JSON(http.StatusOK, newNode)
 }
 
+// UpdateApi godoc
+// @Summary Update existing node
+// @Description Update node information
+// @Tags NodeType
+// @Accept multipart/form-data
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Param id path string true "Node ID"
+// @Param title formData string false "Node title"
+// @Param content formData string false "Node content"
+// @Param image formData file false "Image file"
+// @Success 200
+// @Failure 400
+// @Failure 404
+// @Router /{typeId}/{id} [put]
 func (n *NodeType) UpdateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")
@@ -111,6 +161,18 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 	c.JSON(http.StatusOK, updateNode)
 }
 
+// DeleteApi godoc
+// @Summary Delete node
+// @Description Permanently delete a specific node
+// @Tags NodeType
+// @Accept json
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Param id path string true "Node ID"
+// @Success 200
+// @Failure 400
+// @Failure 404
+// @Router /{typeId}/{id} [delete]
 func (n *NodeType) DeleteApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")

@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"go-cms-service/config"
+	_ "go-cms-service/docs"
 	"go-cms-service/middleware"
 	"go-cms-service/pkg/db"
 	"go-cms-service/pkg/helper/handler"
@@ -11,12 +14,32 @@ import (
 	"go-cms-service/pkg/nodeType/service"
 )
 
+// @title Go CMS API
+// @version 1.0
+// @description A CMS API service.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	db := db.Init(config.LoadConfig().CachePath)
 	nodeTypeService := nodeType_service.NewNodeTypeService(db)
 	nodeTypeService.InitDatabase()
 
 	r := gin.Default()
+
+	// Swagger documentation endpoint
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	helperService := helper_service.NewHelperService(db)
 	helperHandler := helper_handler.NewHelperHandler(nodeTypeService, helperService)
