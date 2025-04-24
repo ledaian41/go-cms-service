@@ -83,7 +83,7 @@ func (n *NodeType) ReadApi(c *gin.Context) {
 func (n *NodeType) CreateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 
-	data := make(map[string]interface{})
+	rawData := make(map[string]interface{})
 	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -92,16 +92,17 @@ func (n *NodeType) CreateApi(c *gin.Context) {
 
 	for key, values := range form.Value {
 		if len(values) > 0 {
-			data[key] = values[0]
+			rawData[key] = values[0]
 		}
 	}
 	for key, files := range form.File {
 		if len(files) > 0 {
-			data[key] = files[0]
+			rawData[key] = files[0]
 		}
 	}
 
-	newNode, err := n.nodeTypeService.CreateRecord(typeId, data)
+	parsedData := n.nodeTypeService.PreprocessData(n.nodeTypeService.FetchNodeType(typeId), rawData)
+	newNode, err := n.nodeTypeService.CreateRecord(typeId, parsedData)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return

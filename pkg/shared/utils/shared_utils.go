@@ -20,8 +20,11 @@ func IsDirectory(path string) bool {
 	return info.IsDir()
 }
 
-func RandomID() string {
-	b := make([]byte, 4) // 4 bytes = 8 hex characters
+func RandomID(bytes uint8) string {
+	if bytes == 0 {
+		bytes = 4
+	}
+	b := make([]byte, bytes) // 4 bytes = 8 hex characters
 	_, err := rand.Read(b)
 	if err != nil {
 		log.Printf("❌ Failed to generate random ID: %v", err)

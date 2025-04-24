@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
@@ -8,6 +9,7 @@ import (
 	_ "go-cms-service/docs"
 	"go-cms-service/middleware"
 	"go-cms-service/pkg/db"
+	"go-cms-service/pkg/file/service"
 	"go-cms-service/pkg/helper/handler"
 	"go-cms-service/pkg/helper/service"
 	"go-cms-service/pkg/nodeType/handler"
@@ -32,8 +34,9 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	db := db.Init(config.LoadConfig().CachePath)
-	nodeTypeService := nodeType_service.NewNodeTypeService(db)
+	db := db.Init(fmt.Sprintf("%s/cache.sqlite", config.LoadConfig().CachePath))
+	fileService := file_service.NewFileService()
+	nodeTypeService := nodeType_service.NewNodeTypeService(db, fileService)
 	nodeTypeService.InitDatabase()
 
 	r := gin.Default()

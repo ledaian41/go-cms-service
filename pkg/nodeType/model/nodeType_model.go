@@ -14,7 +14,7 @@ type NodeType struct {
 }
 
 func (n *NodeType) BeforeCreate(_ *gorm.DB) (err error) {
-	n.ID = shared_utils.RandomID()
+	n.ID = shared_utils.RandomID(4)
 	return
 }
 
@@ -27,7 +27,7 @@ type PropertyType struct {
 }
 
 func (n *PropertyType) BeforeCreate(_ *gorm.DB) (err error) {
-	n.ID = shared_utils.RandomID()
+	n.ID = shared_utils.RandomID(4)
 	return
 }
 
