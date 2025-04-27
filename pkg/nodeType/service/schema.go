@@ -6,6 +6,7 @@ import (
 	"go-cms-service/pkg/nodeType/model"
 	"go-cms-service/pkg/nodeType/sql_helper"
 	"go-cms-service/pkg/nodeType/utils"
+	"go-cms-service/pkg/nodeType/valueType"
 	"go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"log"
@@ -115,18 +116,24 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 
 	for pid, pt := range currentMap {
 		if newPT, ok := newMap[pid]; ok {
-			if pt.ValueType != newPT.ValueType {
+			if valueType.MapValueTypeToSQL(pt.ValueType) != valueType.MapValueTypeToSQL(newPT.ValueType) {
 				if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
 					if !strings.Contains(err.Error(), "no such column") {
-						log.Printf("❌ Error update column %s: %v", pt.PID, err)
+						log.Printf("❌ Error delete column %s: %v\n", pt.PID, err)
 						return newNodeType.TID, nil
 					}
 				}
-			}
-			pt.ValueType = newPT.ValueType
-			if err := s.db.Save(pt).Error; err != nil {
-				log.Printf("❌ Failed to update PropertyType (pid=%s): %v", pid, err)
-				return newNodeType.TID, nil
+				if err := s.db.Unscoped().Delete(pt).Error; err != nil {
+					log.Printf("❌ Failed to delete PropertyType (pid=%s): %v", pid, err)
+					return newNodeType.TID, nil
+				}
+				toCreate = append(toCreate, newPT)
+			} else {
+				pt.ValueType = newPT.ValueType
+				if err := s.db.Save(pt).Error; err != nil {
+					log.Printf("❌ Failed to update PropertyType (pid=%s): %v", pid, err)
+					return newNodeType.TID, nil
+				}
 			}
 		} else {
 			if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
