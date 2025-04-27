@@ -1,7 +1,7 @@
 package shared_interface
 
 import (
-	file_model "go-cms-service/pkg/file/model"
+	"go-cms-service/pkg/file/model"
 	"go-cms-service/pkg/shared/dto"
 	"mime/multipart"
 )
@@ -17,7 +17,7 @@ type NodeTypeServiceInterface interface {
 	CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error)
 	UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error)
 	DeleteRecord(tid string, id string) error
-	PreprocessData(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) map[string]interface{}
+	PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error)
 }
 
 type HelperServiceInterface interface {

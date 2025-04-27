@@ -1,37 +1,131 @@
 package nodeType_service
 
 import (
+	"errors"
+	"fmt"
+	"go-cms-service/config"
 	"go-cms-service/pkg/shared/dto"
+	shared_utils "go-cms-service/pkg/shared/utils"
+	"log"
 	"mime/multipart"
 	"os"
+	"sync"
 )
 
-func (s *NodeTypeService) PreprocessData(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) map[string]interface{} {
+type fileInfo struct {
+	pid        string
+	fileHeader *multipart.FileHeader
+}
+
+type fileResult struct {
+	pid  string
+	path string
+	err  error
+}
+
+var (
+	ErrFileTooLarge      = errors.New("file size exceeds maximum limit")
+	ErrTotalSizeTooLarge = errors.New("total file size exceeds maximum limit")
+)
+
+var (
+	MaxFileSize      = config.LoadConfig().MaxUploadFileSize
+	MaxTotalFileSize = config.LoadConfig().MaxTotalUploadFileSize
+)
+
+func validateFileSize(fileHeader *multipart.FileHeader) error {
+	fileSize := shared_utils.FileSize(fileHeader.Size)
+	maxSize := shared_utils.FileSize(MaxFileSize * shared_utils.MB)
+	if fileSize > maxSize {
+		return fmt.Errorf("%w: file %s is %s, max allowed is %s",
+			ErrFileTooLarge,
+			fileHeader.Filename,
+			fileSize.String(),
+			maxSize.String())
+	}
+	return nil
+}
+
+func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
+	rawFiles := make(map[string]*multipart.FileHeader, 0)
 	for k, v := range rawData {
+		fh, ok := v.(*multipart.FileHeader)
+		if ok {
+			rawFiles[k] = fh
+			continue
+		}
 		result[k] = v
 	}
 
-	propertyTypes := nodeTypeDTO.PropertyTypes
-	for _, propertyType := range propertyTypes {
-		if propertyType.ValueType != "FILE" {
+	var totalSize shared_utils.FileSize
+	filesChan := make(chan fileResult)
+
+	filesToProcess := make([]fileInfo, 0)
+	for _, pt := range nodeTypeDTO.PropertyTypes {
+		if pt.ValueType != "FILE" {
 			continue
 		}
 
-		fileHeader, ok := rawData[propertyType.PID].(*multipart.FileHeader)
-		if !ok {
+		fileHeader, exists := rawFiles[pt.PID]
+		if !exists || fileHeader == nil {
 			continue
 		}
 
-		fileInfo, err := s.fileService.SaveFile(fileHeader, "./cache/files/")
-		if err != nil {
-			if (fileInfo != nil) && (fileInfo.SavedPath != "") {
-				os.Remove(fileInfo.SavedPath)
-			}
-			continue
+		if err := validateFileSize(fileHeader); err != nil {
+			return nil, err
 		}
 
-		result[propertyType.PID] = fileInfo.SavedPath
+		totalSize += shared_utils.FileSize(fileHeader.Size)
+		maxTotalSize := shared_utils.FileSize(MaxTotalFileSize * shared_utils.MB)
+		if totalSize > maxTotalSize {
+			return nil, fmt.Errorf("%w: total size %s exceeds limit of %s",
+				ErrTotalSizeTooLarge,
+				totalSize.String(),
+				maxTotalSize.String())
+		}
+
+		filesToProcess = append(filesToProcess, fileInfo{pid: pt.PID, fileHeader: fileHeader})
 	}
-	return result
+
+	var wg sync.WaitGroup
+	for _, fi := range filesToProcess {
+		wg.Add(1)
+
+		go func(pid string, fh *multipart.FileHeader) {
+			defer wg.Done()
+
+			fileInfo, err := s.fileService.SaveFile(fh, fmt.Sprintf("./%s/files/", config.LoadConfig().CachePath))
+			if err != nil {
+				filesChan <- fileResult{
+					pid: pid,
+					err: fmt.Errorf("failed to save file for property %s: %w", pid, err),
+				}
+				if (fileInfo != nil) && (fileInfo.SavedPath != "") {
+					os.Remove(fileInfo.SavedPath)
+				}
+				return
+			}
+
+			filesChan <- fileResult{
+				pid:  pid,
+				path: fileInfo.SavedPath,
+			}
+		}(fi.pid, fi.fileHeader)
+	}
+
+	go func() {
+		wg.Wait()
+		close(filesChan)
+	}()
+
+	for fr := range filesChan {
+		if fr.err != nil {
+			log.Println(fr.err)
+			continue
+		}
+		result[fr.pid] = fr.path
+	}
+
+	return result, nil
 }

@@ -101,7 +101,12 @@ func (n *NodeType) CreateApi(c *gin.Context) {
 		}
 	}
 
-	parsedData := n.nodeTypeService.PreprocessData(n.nodeTypeService.FetchNodeType(typeId), rawData)
+	parsedData, err := n.nodeTypeService.PreprocessFile(n.nodeTypeService.FetchNodeType(typeId), rawData)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	newNode, err := n.nodeTypeService.CreateRecord(typeId, parsedData)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
@@ -130,7 +135,7 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")
 
-	data := make(map[string]interface{})
+	rawData := make(map[string]interface{})
 	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -139,12 +144,12 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 
 	for key, values := range form.Value {
 		if len(values) > 0 {
-			data[key] = values[0]
+			rawData[key] = values[0]
 		}
 	}
 	for key, files := range form.File {
 		if len(files) > 0 {
-			data[key] = files[0]
+			rawData[key] = files[0]
 		}
 	}
 
@@ -154,7 +159,13 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 		return
 	}
 
-	updateNode, err := n.nodeTypeService.UpdateRecord(typeId, id, data)
+	parsedData, err := n.nodeTypeService.PreprocessFile(n.nodeTypeService.FetchNodeType(typeId), rawData)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	updateNode, err := n.nodeTypeService.UpdateRecord(typeId, id, parsedData)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
