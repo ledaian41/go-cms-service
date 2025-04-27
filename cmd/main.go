@@ -58,5 +58,5 @@ func main() {
 	r.PATCH("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.UpdateApi)
 	r.DELETE("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.DeleteApi)
 
-	r.Run("localhost:8080")
+	r.Run("0.0.0.0:8080")
 }
