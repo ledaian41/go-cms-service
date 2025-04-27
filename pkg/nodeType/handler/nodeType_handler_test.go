@@ -21,6 +21,10 @@ func (m *MockNodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
 	panic("implement me")
 }
 
+func (m *MockNodeTypeService) FetchNodeType(tid string) shared_dto.NodeTypeDTO {
+	panic("implement me")
+}
+
 func (m *MockNodeTypeService) LoadSchema(filePath string, ch chan<- string) {
 	//TODO implement me
 	panic("implement me")
@@ -36,16 +40,16 @@ func (m *MockNodeTypeService) CheckNodeTypeExist(tid string) bool {
 	panic("implement me")
 }
 
-func (m *MockNodeTypeService) FetchRecords(tid string) (*[]map[string]interface{}, error) {
+func (m *MockNodeTypeService) FetchRecords(tid string) ([]map[string]interface{}, error) {
 	args := m.Called(tid)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 
-	return args.Get(0).(*[]map[string]interface{}), args.Error(1)
+	return args.Get(0).([]map[string]interface{}), args.Error(1)
 }
 
-func (m *MockNodeTypeService) FetchRecord(tid string, id string) (*map[string]interface{}, error) {
+func (m *MockNodeTypeService) FetchRecord(tid string, id string) (map[string]interface{}, error) {
 	args := m.Called(tid, id)
 	if args.Get(0) == nil {
 		if args.Get(1) == nil {
@@ -53,24 +57,28 @@ func (m *MockNodeTypeService) FetchRecord(tid string, id string) (*map[string]in
 		}
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*map[string]interface{}), args.Error(1)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
-func (m *MockNodeTypeService) CreateRecord(tid string, data map[string]interface{}) (*map[string]interface{}, error) {
+func (m *MockNodeTypeService) CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error) {
 	args := m.Called(tid, data)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*map[string]interface{}), args.Error(1)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
-func (m *MockNodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (*map[string]interface{}, error) {
+func (m *MockNodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error) {
 	args := m.Called(tid, id, data)
-	return args.Get(0).(*map[string]interface{}), args.Error(1)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
 func (m *MockNodeTypeService) DeleteRecord(tid string, id string) error {
 	//TODO implement me
+	panic("implement me")
+}
+
+func (m *MockNodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error) {
 	panic("implement me")
 }
 
