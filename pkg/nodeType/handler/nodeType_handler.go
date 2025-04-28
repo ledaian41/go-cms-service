@@ -8,10 +8,10 @@ import (
 )
 
 type NodeType struct {
-	nodeTypeService shared_interface.NodeTypeServiceInterface
+	nodeTypeService shared_interface.NodeTypeService
 }
 
-func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeServiceInterface) *NodeType {
+func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeService) *NodeType {
 	return &NodeType{nodeTypeService: nodeTypeService}
 }
 

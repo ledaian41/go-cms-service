@@ -1,15 +1,13 @@
 package shared_interface
 
 import (
-	"go-cms-service/pkg/file/model"
 	"go-cms-service/pkg/shared/dto"
-	"mime/multipart"
 )
 
-type NodeTypeServiceInterface interface {
+type NodeTypeService interface {
+	LoadSchema(filePath string, ch chan<- string)
 	FetchNodeTypes() *[]shared_dto.NodeTypeDTO
 	FetchNodeType(tid string) shared_dto.NodeTypeDTO
-	LoadSchema(filePath string, ch chan<- string)
 	DeleteNodeType(tid string) (bool, error)
 	CheckNodeTypeExist(tid string) bool
 	FetchRecords(tid string) ([]map[string]interface{}, error)
@@ -18,12 +16,4 @@ type NodeTypeServiceInterface interface {
 	UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error)
 	DeleteRecord(tid string, id string) error
 	PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error)
-}
-
-type HelperServiceInterface interface {
-	LoadJsonData(filePath string, ch chan<- string)
-}
-
-type FileService interface {
-	SaveFile(file *multipart.FileHeader, uploadDir string) (*file_model.FileInfo, error)
 }

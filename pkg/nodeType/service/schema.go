@@ -150,7 +150,11 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 	}
 
 	for _, pt := range toCreate {
-		if err := s.db.Exec(sql_helper.QueryAddColumnToTable(newNodeType.TID, pt)).Error; err != nil {
+		sql := sql_helper.QueryAddColumnToTable(newNodeType.TID, pt)
+		if len(sql) == 0 {
+			continue
+		}
+		if err := s.db.Exec(sql).Error; err != nil {
 			log.Printf("❌ Failed at AutoMigrate: %v", err)
 			return newNodeType.TID, nil
 		}

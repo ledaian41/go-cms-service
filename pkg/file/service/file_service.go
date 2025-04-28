@@ -2,17 +2,28 @@ package file_service
 
 import (
 	"fmt"
+	"go-cms-service/config"
 	"go-cms-service/pkg/file/model"
 	"go-cms-service/pkg/file/utils"
 	"io"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 )
 
 type FileService struct{}
 
 func NewFileService() *FileService {
 	return &FileService{}
+}
+
+func (s FileService) GetFileCachePath(path string) string {
+	fullPath := filepath.Join(config.Env.CachePath, "files", path)
+
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return ""
+	}
+	return fullPath
 }
 
 func (s FileService) SaveFile(file *multipart.FileHeader, uploadDir string) (*file_model.FileInfo, error) {

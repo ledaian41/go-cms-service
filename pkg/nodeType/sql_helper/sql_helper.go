@@ -28,15 +28,23 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {
-		columnDefs = append(columnDefs, fmt.Sprintf("%s %s", pt.PID, valueType.MapValueTypeToSQL(pt.ValueType)))
+		sqlType := valueType.MapValueTypeToSQL(pt.ValueType)
+		if len(sqlType) == 0 {
+			continue
+		}
+		columnDefs = append(columnDefs, fmt.Sprintf("%s %s", pt.PID, sqlType))
 	}
 	query += strings.Join(columnDefs, ", ") + ");"
 	return query
 }
 
 func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
+	sqlType := valueType.MapValueTypeToSQL(pt.ValueType)
+	if len(sqlType) == 0 {
+		return ""
+	}
 	query := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s;",
-		tid, pt.PID, valueType.MapValueTypeToSQL(pt.ValueType))
+		tid, pt.PID, sqlType)
 	return query
 }
 

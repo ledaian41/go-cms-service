@@ -28,14 +28,9 @@ var (
 	ErrTotalSizeTooLarge = errors.New("total file size exceeds maximum limit")
 )
 
-var (
-	MaxFileSize      = config.LoadConfig().MaxUploadFileSize
-	MaxTotalFileSize = config.LoadConfig().MaxTotalUploadFileSize
-)
-
 func validateFileSize(fileHeader *multipart.FileHeader) error {
 	fileSize := shared_utils.FileSize(fileHeader.Size)
-	maxSize := shared_utils.FileSize(MaxFileSize * shared_utils.MB)
+	maxSize := shared_utils.FileSize(config.Env.MaxUploadFileSize * shared_utils.MB)
 	if fileSize > maxSize {
 		return fmt.Errorf("%w: file %s is %s, max allowed is %s",
 			ErrFileTooLarge,
@@ -77,7 +72,7 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 		}
 
 		totalSize += shared_utils.FileSize(fileHeader.Size)
-		maxTotalSize := shared_utils.FileSize(MaxTotalFileSize * shared_utils.MB)
+		maxTotalSize := shared_utils.FileSize(config.Env.MaxTotalUploadFileSize * shared_utils.MB)
 		if totalSize > maxTotalSize {
 			return nil, fmt.Errorf("%w: total size %s exceeds limit of %s",
 				ErrTotalSizeTooLarge,
@@ -95,7 +90,7 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 		go func(pid string, fh *multipart.FileHeader) {
 			defer wg.Done()
 
-			fileInfo, err := s.fileService.SaveFile(fh, fmt.Sprintf("./%s/files/", config.LoadConfig().CachePath))
+			fileInfo, err := s.fileService.SaveFile(fh, fmt.Sprintf("./%s/files/", config.Env.CachePath))
 			if err != nil {
 				filesChan <- fileResult{
 					pid: pid,

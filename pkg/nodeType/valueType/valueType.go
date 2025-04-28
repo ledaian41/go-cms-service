@@ -6,9 +6,9 @@ func MapValueTypeToSQL(valueType string) string {
 		return "integer"
 	case "DOUBLE", "FLOAT":
 		return "real"
-	case "STRING", "FILE":
-		fallthrough
-	default:
+	case "STRING", "JSON", "FILE":
 		return "text"
+	default:
+		return ""
 	}
 }

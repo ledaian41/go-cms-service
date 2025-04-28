@@ -9,11 +9,11 @@ import (
 )
 
 type HelperHandler struct {
-	nodeTypeService shared_interface.NodeTypeServiceInterface
-	helperService   shared_interface.HelperServiceInterface
+	nodeTypeService shared_interface.NodeTypeService
+	helperService   shared_interface.HelperService
 }
 
-func NewHelperHandler(nodeTypeService shared_interface.NodeTypeServiceInterface, helperService shared_interface.HelperServiceInterface) *HelperHandler {
+func NewHelperHandler(nodeTypeService shared_interface.NodeTypeService, helperService shared_interface.HelperService) *HelperHandler {
 	return &HelperHandler{nodeTypeService: nodeTypeService, helperService: helperService}
 }
 

@@ -28,7 +28,7 @@ func GenerateUploadPath(fileName string) (string, error) {
 	now := time.Now()
 
 	uploadDir := fmt.Sprintf("%s/files/%d/%02d/%02d",
-		config.LoadConfig().CachePath,
+		config.Env.CachePath,
 		now.Year(),
 		now.Month(),
 		now.Day(),

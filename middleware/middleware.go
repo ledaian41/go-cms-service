@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func CheckNodeTypeExist(nodeTypeService shared_interface.NodeTypeServiceInterface) gin.HandlerFunc {
+func CheckNodeTypeExist(nodeTypeService shared_interface.NodeTypeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		typeId := c.Param("typeId")
 		if !nodeTypeService.CheckNodeTypeExist(typeId) {
