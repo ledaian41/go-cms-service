@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-cms-service/pkg/shared/interface"
+	"go-cms-service/pkg/shared/utils"
 	"net/http"
 )
 
@@ -33,7 +34,11 @@ func (n *NodeType) checkTypeId(typeId string) error {
 // @Failure 400
 // @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
-	records, err := n.nodeTypeService.FetchRecords(c.Param("typeId"))
+	typeId := c.Param("typeId")
+	referenceView := c.Query("referenceView")
+	records, err := n.nodeTypeService.FetchRecords(typeId, shared_utils.QueryOption{
+		ReferenceView: referenceView,
+	})
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
