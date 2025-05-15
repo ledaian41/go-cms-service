@@ -2,6 +2,11 @@
   "tid": "product",
   "propertyTypes": [
     {
+      "pid": "category",
+      "valueType": "REFERENCE",
+      "referenceType": "productCategory"
+    },
+    {
       "pid": "name",
       "valueType": "STRING"
     },

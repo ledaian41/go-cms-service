@@ -2,7 +2,7 @@ package nodeType_model
 
 import (
 	"go-cms-service/pkg/shared/dto"
-	shared_utils "go-cms-service/pkg/shared/utils"
+	"go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 )
 
@@ -20,10 +20,12 @@ func (n *NodeType) BeforeCreate(_ *gorm.DB) (err error) {
 
 type PropertyType struct {
 	gorm.Model
-	ID            string `gorm:"primaryKey;type:char(8)"`
-	NodeTypeRefer string
-	PID           string `json:"pid" gorm:"column:pid"`
-	ValueType     string `json:"valueType"`
+	ID             string `gorm:"primaryKey;type:char(8)"`
+	NodeTypeRefer  string
+	PID            string `json:"pid" gorm:"column:pid"`
+	ValueType      string `json:"valueType"`
+	ReferenceType  string `json:"referenceType"`
+	ReferenceValue string `json:"referenceValue"`
 }
 
 func (n *PropertyType) BeforeCreate(_ *gorm.DB) (err error) {

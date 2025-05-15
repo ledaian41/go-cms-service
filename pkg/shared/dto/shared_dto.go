@@ -6,6 +6,8 @@ type NodeTypeDTO struct {
 }
 
 type PropertyTypeDTO struct {
-	PID       string `json:"pid"`
-	ValueType string `json:"valueType"`
+	PID            string `json:"pid"`
+	ValueType      string `json:"valueType"`
+	ReferenceType  string `json:"referenceType"`
+	ReferenceValue string `json:"referenceValue"`
 }

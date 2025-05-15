@@ -33,13 +33,13 @@ func (n *NodeType) checkTypeId(typeId string) error {
 // @Failure 400
 // @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
-	result, err := n.nodeTypeService.FetchRecords(c.Param("typeId"))
+	records, err := n.nodeTypeService.FetchRecords(c.Param("typeId"))
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, records)
 }
 
 // ReadApi godoc

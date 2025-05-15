@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"go-cms-service/config"
 	"go-cms-service/pkg/shared/dto"
-	shared_utils "go-cms-service/pkg/shared/utils"
+	"go-cms-service/pkg/shared/utils"
+	"go-cms-service/pkg/valuetype"
 	"log"
 	"mime/multipart"
 	"os"
@@ -43,7 +44,7 @@ func validateFileSize(fileHeader *multipart.FileHeader) error {
 
 func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
-	rawFiles := make(map[string]*multipart.FileHeader, 0)
+	rawFiles := make(map[string]*multipart.FileHeader)
 	for k, v := range rawData {
 		fh, ok := v.(*multipart.FileHeader)
 		if ok {
@@ -58,7 +59,12 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 
 	filesToProcess := make([]fileInfo, 0)
 	for _, pt := range nodeTypeDTO.PropertyTypes {
-		if pt.ValueType != "FILE" {
+		valueType, err := valuetype.ParseValueType(pt.ValueType)
+		if err != nil {
+			continue
+		}
+
+		if valueType != valuetype.File {
 			continue
 		}
 

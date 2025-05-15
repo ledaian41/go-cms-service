@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"go-cms-service/pkg/nodeType/model"
-	"go-cms-service/pkg/nodeType/valueType"
+	"go-cms-service/pkg/valuetype"
 	"hash/fnv"
 	"math/big"
 	"strings"
@@ -28,7 +28,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {
-		sqlType := valueType.MapValueTypeToSQL(pt.ValueType)
+		sqlType := valuetype.MapValueTypeToSQL(pt.ValueType)
 		if len(sqlType) == 0 {
 			continue
 		}
@@ -39,7 +39,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 }
 
 func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
-	sqlType := valueType.MapValueTypeToSQL(pt.ValueType)
+	sqlType := valuetype.MapValueTypeToSQL(pt.ValueType)
 	if len(sqlType) == 0 {
 		return ""
 	}

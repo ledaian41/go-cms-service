@@ -6,8 +6,8 @@ import (
 	"go-cms-service/pkg/nodeType/model"
 	"go-cms-service/pkg/nodeType/sql_helper"
 	"go-cms-service/pkg/nodeType/utils"
-	"go-cms-service/pkg/nodeType/valueType"
 	"go-cms-service/pkg/shared/utils"
+	"go-cms-service/pkg/valuetype"
 	"gorm.io/gorm"
 	"log"
 	"strings"
@@ -116,7 +116,7 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 
 	for pid, pt := range currentMap {
 		if newPT, ok := newMap[pid]; ok {
-			if valueType.MapValueTypeToSQL(pt.ValueType) != valueType.MapValueTypeToSQL(newPT.ValueType) {
+			if valuetype.MapValueTypeToSQL(pt.ValueType) != valuetype.MapValueTypeToSQL(newPT.ValueType) {
 				if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
 					if !strings.Contains(err.Error(), "no such column") {
 						log.Printf("❌ Error delete column %s: %v\n", pt.PID, err)
