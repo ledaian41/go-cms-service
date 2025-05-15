@@ -1,8 +1,8 @@
 package nodeType_service
 
 import (
-	"go-cms-service/pkg/nodeType/model"
-	"go-cms-service/pkg/nodeType/sql_helper"
+	"go-cms-service/pkg/nodetype/model"
+	"go-cms-service/pkg/nodetype/sql_helper"
 	"go-cms-service/pkg/shared/dto"
 	"go-cms-service/pkg/shared/interface"
 	"gorm.io/gorm"

@@ -3,9 +3,9 @@ package nodeType_service
 import (
 	"errors"
 	"fmt"
-	"go-cms-service/pkg/nodeType/model"
-	"go-cms-service/pkg/nodeType/sql_helper"
-	"go-cms-service/pkg/nodeType/utils"
+	"go-cms-service/pkg/nodetype/model"
+	"go-cms-service/pkg/nodetype/sql_helper"
+	"go-cms-service/pkg/nodetype/utils"
 	"go-cms-service/pkg/shared/utils"
 	"go-cms-service/pkg/valuetype"
 	"gorm.io/gorm"

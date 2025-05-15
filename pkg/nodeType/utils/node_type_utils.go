@@ -3,7 +3,7 @@ package nodeType_utils
 import (
 	"encoding/json"
 	"fmt"
-	"go-cms-service/pkg/nodeType/model"
+	"go-cms-service/pkg/nodetype/model"
 	"io/ioutil"
 	"log"
 	"path/filepath"

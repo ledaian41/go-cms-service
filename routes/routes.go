@@ -11,8 +11,8 @@ import (
 	"go-cms-service/pkg/file/service"
 	"go-cms-service/pkg/helper/handler"
 	"go-cms-service/pkg/helper/service"
-	"go-cms-service/pkg/nodeType/handler"
-	"go-cms-service/pkg/nodeType/service"
+	"go-cms-service/pkg/nodetype/handler"
+	"go-cms-service/pkg/nodetype/service"
 	"gorm.io/gorm"
 	"net/http"
 )

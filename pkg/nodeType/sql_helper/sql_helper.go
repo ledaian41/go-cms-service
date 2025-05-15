@@ -3,7 +3,7 @@ package sql_helper
 import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
-	"go-cms-service/pkg/nodeType/model"
+	"go-cms-service/pkg/nodetype/model"
 	"go-cms-service/pkg/valuetype"
 	"hash/fnv"
 	"math/big"
