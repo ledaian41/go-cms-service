@@ -28,7 +28,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {
-		sqlType := valuetype.MapValueTypeToSQL(pt.ValueType)
+		sqlType := valuetype.MapValueTypeToSQL(pt)
 		if len(sqlType) == 0 {
 			continue
 		}
@@ -39,7 +39,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 }
 
 func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
-	sqlType := valuetype.MapValueTypeToSQL(pt.ValueType)
+	sqlType := valuetype.MapValueTypeToSQL(pt)
 	if len(sqlType) == 0 {
 		return ""
 	}

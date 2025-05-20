@@ -1,6 +1,9 @@
 package shared_utils
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type QueryOption struct {
 	ReferenceView string
@@ -13,4 +16,11 @@ func (qo QueryOption) GetReferenceViewKeys() []string {
 		return nil
 	}
 	return strings.Split(qo.ReferenceView, ",")
+}
+
+func ParseInt(value string) int {
+	if result, err := strconv.Atoi(value); err == nil {
+		return result
+	}
+	return 0
 }

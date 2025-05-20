@@ -116,7 +116,7 @@ func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newN
 
 	for pid, pt := range currentMap {
 		if newPT, ok := newMap[pid]; ok {
-			if valuetype.MapValueTypeToSQL(pt.ValueType) != valuetype.MapValueTypeToSQL(newPT.ValueType) {
+			if valuetype.MapValueTypeToSQL(pt) != valuetype.MapValueTypeToSQL(newPT) {
 				if err := s.deleteColumn(newNodeType.TID, pid); err != nil {
 					if !strings.Contains(err.Error(), "no such column") {
 						log.Printf("❌ Error delete column %s: %v\n", pt.PID, err)

@@ -1,7 +1,9 @@
 package valuetype
 
-func MapValueTypeToSQL(valueType string) string {
-	vt, err := ParseValueType(valueType)
+import "go-cms-service/pkg/nodetype/model"
+
+func MapValueTypeToSQL(pt *nodeType_model.PropertyType) string {
+	vt, err := ParseValueType(pt.ValueType)
 	if err != nil {
 		return ""
 	}

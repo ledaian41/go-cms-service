@@ -6,10 +6,8 @@ import (
 	"go-cms-service/pkg/shared/dto"
 	"go-cms-service/pkg/shared/interface"
 	"go-cms-service/pkg/shared/utils"
-	"go-cms-service/pkg/valuetype"
 	"gorm.io/gorm"
 	"log"
-	"slices"
 )
 
 type NodeTypeService struct {
@@ -71,42 +69,32 @@ func (s *NodeTypeService) CheckNodeTypeExist(tid string) bool {
 	return s.db.Migrator().HasTable(tid)
 }
 
-func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, error) {
+func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
 	var records []map[string]interface{}
-	if err := s.db.Table(tid).Find(&records).Error; err != nil {
-		return nil, err
+	if option.Page < 1 {
+		option.Page = 1 // default page number
 	}
 
-	referenceFields := make([]shared_dto.PropertyTypeDTO, 0)
-	if keys := option.GetReferenceViewKeys(); keys != nil {
-		nodeType := s.FetchNodeType(tid)
-		if nodeType.PropertyTypes != nil {
-			for _, pt := range nodeType.PropertyTypes {
-				vt, err := valuetype.ParseValueType(pt.ValueType)
-				if err != nil {
-					continue
-				}
-				if vt == valuetype.Reference && slices.Contains(keys, pt.PID) {
-					referenceFields = append(referenceFields, pt)
-				}
-			}
-		}
+	if option.PageSize < 1 || option.PageSize > 100 {
+		option.PageSize = 10 // default page size
 	}
-	for _, record := range records {
-		for _, pt := range referenceFields {
-			referenceId, ok := record[pt.PID].(string)
-			if !ok {
-				continue
-			}
-			referenceNode, err := s.FetchRecord(pt.ReferenceType, referenceId)
-			if err != nil {
-				continue
-			}
-			record[pt.PID] = referenceNode
-		}
+	offset := (int(option.Page) - 1) * int(option.PageSize)
+	if err := s.db.Table(tid).Limit(int(option.PageSize)).Offset(offset).Find(&records).Error; err != nil {
+		return nil, nil, err
 	}
 
-	return records, nil
+	var total int64
+	if err := s.db.Table(tid).Count(&total).Error; err != nil {
+		return nil, nil, err
+	}
+	pagination := &shared_dto.PaginationDTO{
+		Page:     option.Page,
+		PageSize: option.PageSize,
+		Total:    total,
+	}
+	pagination.CalculateTotalPage()
+
+	return records, pagination, nil
 }
 
 func (s *NodeTypeService) FetchRecord(tid string, id string) (map[string]interface{}, error) {
