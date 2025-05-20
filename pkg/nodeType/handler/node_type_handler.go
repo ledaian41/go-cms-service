@@ -36,15 +36,20 @@ func (n *NodeType) checkTypeId(typeId string) error {
 func (n *NodeType) ListApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	referenceView := c.Query("referenceView")
-	records, err := n.nodeTypeService.FetchRecords(typeId, shared_utils.QueryOption{
+	records, pagination, err := n.nodeTypeService.FetchRecords(typeId, shared_utils.QueryOption{
 		ReferenceView: referenceView,
+		PageSize:      int8(shared_utils.ParseInt(c.Query("pageSize"))),
+		Page:          int32(shared_utils.ParseInt(c.Query("page"))),
 	})
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, records)
+	c.JSON(http.StatusOK, gin.H{
+		"items":      records,
+		"pagination": pagination,
+	})
 }
 
 // ReadApi godoc
