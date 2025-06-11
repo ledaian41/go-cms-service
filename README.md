@@ -11,10 +11,10 @@ A lightweight CMS service built with Go and GORM, using SQLite to manage dynamic
 ## 🛠️ Tech Stack
 - Go
 - GORM
-- SQLite (3.35.0+ required for DROP COLUMN)
+- Postgres (v1.6.0)
 
 ## 🚀 Run
-`go run cmd/main.go`
+`go run main.go`
 
 ### 📦 Definition of Value Types 
 | Schema Value Type | SQLite Type |
