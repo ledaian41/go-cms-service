@@ -3,6 +3,7 @@ package nodeType_handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/iancoleman/strcase"
 	"go-cms-service/pkg/shared/interface"
 	"go-cms-service/pkg/shared/utils"
 	"net/http"
@@ -34,7 +35,7 @@ func (n *NodeType) checkTypeId(typeId string) error {
 // @Failure 400
 // @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
-	typeId := c.Param("typeId")
+	typeId := strcase.ToSnake(c.Param("typeId"))
 	referenceView := c.Query("referenceView")
 	records, pagination, err := n.nodeTypeService.FetchRecords(typeId, shared_utils.QueryOption{
 		ReferenceView: referenceView,

@@ -3,6 +3,7 @@ package sql_helper
 import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
+	"github.com/iancoleman/strcase"
 	"go-cms-service/pkg/nodetype/model"
 	"go-cms-service/pkg/valuetype"
 	"hash/fnv"
@@ -24,7 +25,7 @@ func GenerateID() string {
 }
 
 func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
-	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, ", nodeType.TID)
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, ", strcase.ToSnake(nodeType.TID))
 	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {
@@ -32,7 +33,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 		if len(sqlType) == 0 {
 			continue
 		}
-		columnDefs = append(columnDefs, fmt.Sprintf("%s %s", pt.PID, sqlType))
+		columnDefs = append(columnDefs, fmt.Sprintf("%s %s", strcase.ToSnake(pt.PID), sqlType))
 	}
 	query += strings.Join(columnDefs, ", ") + ");"
 	return query
@@ -49,9 +50,14 @@ func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
 }
 
 func QueryDeleteColumnFromTable(tid, pid string) string {
-	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s", tid, pid)
+	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s", strcase.ToSnake(tid), strcase.ToSnake(pid))
 }
 
 func QueryTableColumns(tid string) string {
-	return fmt.Sprintf("PRAGMA table_info(%s)", tid)
+	return fmt.Sprintf(`
+		SELECT column_name
+		FROM information_schema.columns
+		WHERE table_schema = 'public' AND table_name = '%s'
+		ORDER BY ordinal_position
+	`, tid)
 }

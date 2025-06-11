@@ -66,7 +66,15 @@ func (s *NodeTypeService) DeleteNodeType(tid string) (bool, error) {
 }
 
 func (s *NodeTypeService) CheckNodeTypeExist(tid string) bool {
-	return s.db.Migrator().HasTable(tid)
+	var exists bool
+	query := `
+		SELECT EXISTS (
+			SELECT FROM information_schema.tables 
+			WHERE table_schema = 'public' AND table_name = ?
+		)
+	`
+	s.db.Raw(query, tid).Scan(&exists)
+	return exists
 }
 
 func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
