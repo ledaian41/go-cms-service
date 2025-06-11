@@ -1,16 +1,21 @@
 package db
 
 import (
-	"gorm.io/driver/sqlite"
+	"fmt"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 )
 
 var DB *gorm.DB
 
-func Init(path string) *gorm.DB {
-	var err error
-	DB, err = gorm.Open(sqlite.Open(path), &gorm.Config{})
+func Init(host string, user string, pwd string) *gorm.DB {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=postgres port=5432 sslmode=disable", host, user, pwd)
+	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	//log.Println("Connected to:", version)
+	//var err error
+	//DB, err = gorm.Open(sqlite.Open(path), &gorm.Config{})
 	if err != nil {
 		log.Printf("❌ Failed to connect to database: %v", err)
 	}

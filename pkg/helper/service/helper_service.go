@@ -122,11 +122,8 @@ func (s *HelperService) getTableColumns(tid string) map[string]bool {
 
 	columns := make(map[string]bool)
 	for rows.Next() {
-		var cid int
-		var name, ctype string
-		var notnull, pk int
-		var dflt interface{}
-		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err != nil {
+		var name string
+		if err := rows.Scan(&name); err != nil {
 			continue
 		}
 		columns[name] = true

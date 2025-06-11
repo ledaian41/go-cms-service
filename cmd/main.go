@@ -6,7 +6,6 @@ import (
 	"go-cms-service/routes"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 // @title Go CMS API
@@ -29,7 +28,7 @@ import (
 func main() {
 	config.LoadConfig()
 	redisClient := config.InitRedisClient()
-	db := db.Init(filepath.Join(config.Env.CachePath, "cache.sqlite"))
+	db := db.Init(config.Env.DbHost, config.Env.DbUser, config.Env.DbPwd)
 	r := routes.InitRoutes(db, redisClient)
 	port := os.Getenv("APP_PORT")
 	if port == "" {
