@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/iancoleman/strcase"
-	"go-cms-service/pkg/shared/interface"
-	"go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
+	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"net/http"
 )
 

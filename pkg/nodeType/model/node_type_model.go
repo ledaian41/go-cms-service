@@ -1,8 +1,8 @@
 package nodeType_model
 
 import (
-	"go-cms-service/pkg/shared/dto"
-	"go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
+	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 )
 
