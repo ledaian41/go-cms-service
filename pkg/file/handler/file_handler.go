@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-cms-service/pkg/shared/interface"
+	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
 	"net/http"
 )
 
