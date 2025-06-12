@@ -14,7 +14,7 @@ A lightweight CMS service built with Go and GORM, using SQLite to manage dynamic
 - Postgres (v1.6.0)
 
 ## 🚀 Run
-`go run main.go`
+`go run cmd/main.go`
 
 ### 📦 Definition of Value Types 
 | Schema Value Type | SQLite Type |
