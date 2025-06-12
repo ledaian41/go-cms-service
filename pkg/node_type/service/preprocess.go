@@ -6,7 +6,7 @@ import (
 	"github.com/ledaian41/go-cms-service/config"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
-	"github.com/ledaian41/go-cms-service/pkg/valuetype"
+	"github.com/ledaian41/go-cms-service/pkg/value_type"
 	"log"
 	"mime/multipart"
 	"os"
@@ -59,12 +59,12 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 
 	filesToProcess := make([]fileInfo, 0)
 	for _, pt := range nodeTypeDTO.PropertyTypes {
-		valueType, err := valuetype.ParseValueType(pt.ValueType)
+		valueType, err := value_type.ParseValueType(pt.ValueType)
 		if err != nil {
 			continue
 		}
 
-		if valueType != valuetype.File {
+		if valueType != value_type.File {
 			continue
 		}
 

@@ -1,4 +1,4 @@
-package valuetype
+package value_type
 
 import "github.com/ledaian41/go-cms-service/pkg/node_type/model"
 

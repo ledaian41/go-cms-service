@@ -1,4 +1,4 @@
-package valuetype
+package value_type
 
 import "fmt"
 
