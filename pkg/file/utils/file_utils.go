@@ -2,8 +2,8 @@ package file_utils
 
 import (
 	"fmt"
-	"github.com/ledaian41/go-cms-service/config"
-	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
+	"go-cms-service/config"
+	"go-cms-service/pkg/shared/utils"
 	"os"
 	"path/filepath"
 	"regexp"

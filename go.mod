@@ -1,4 +1,4 @@
-module github.com/ledaian41/go-cms-service
+module go-cms-service
 
 go 1.23.3
 

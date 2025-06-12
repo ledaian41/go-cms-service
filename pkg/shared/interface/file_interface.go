@@ -1,7 +1,7 @@
 package shared_interface
 
 import (
-	"github.com/ledaian41/go-cms-service/pkg/file/model"
+	"go-cms-service/pkg/file/model"
 	"mime/multipart"
 )
 

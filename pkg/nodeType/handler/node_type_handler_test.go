@@ -3,9 +3,9 @@ package nodeType_handler
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go-cms-service/pkg/shared/dto"
 	"net/http"
 	"net/http/httptest"
 	"strings"

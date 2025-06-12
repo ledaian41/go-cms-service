@@ -2,7 +2,7 @@ package sql_helper
 
 import (
 	"fmt"
-	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
+	"go-cms-service/pkg/shared/dto"
 	"strings"
 )
 

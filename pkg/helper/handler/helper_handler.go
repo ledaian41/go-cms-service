@@ -3,7 +3,7 @@ package helper_handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
+	"go-cms-service/pkg/shared/interface"
 	"log"
 	"net/http"
 )

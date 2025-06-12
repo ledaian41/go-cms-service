@@ -2,9 +2,9 @@ package file_service
 
 import (
 	"fmt"
-	"github.com/ledaian41/go-cms-service/config"
-	"github.com/ledaian41/go-cms-service/pkg/file/model"
-	"github.com/ledaian41/go-cms-service/pkg/file/utils"
+	"go-cms-service/config"
+	"go-cms-service/pkg/file/model"
+	"go-cms-service/pkg/file/utils"
 	"io"
 	"mime/multipart"
 	"os"
