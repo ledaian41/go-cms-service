@@ -1,8 +1,8 @@
 package shared_interface
 
 import (
-	"go-cms-service/pkg/shared/dto"
-	"go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
+	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 )
 
 type NodeTypeService interface {

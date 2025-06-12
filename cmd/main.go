@@ -1,9 +1,9 @@
 package main
 
 import (
-	"go-cms-service/config"
-	"go-cms-service/pkg/db"
-	"go-cms-service/routes"
+	"github.com/ledaian41/go-cms-service/config"
+	"github.com/ledaian41/go-cms-service/pkg/db"
+	"github.com/ledaian41/go-cms-service/routes"
 	"log"
 	"os"
 )
