@@ -1,11 +1,11 @@
 package nodeType_service
 
 import (
-	"go-cms-service/pkg/nodetype/model"
-	"go-cms-service/pkg/nodetype/sql_helper"
-	"go-cms-service/pkg/shared/dto"
-	"go-cms-service/pkg/shared/interface"
-	"go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/nodetype/model"
+	"github.com/ledaian41/go-cms-service/pkg/nodetype/sql_helper"
+	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
+	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
+	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"log"
 )
