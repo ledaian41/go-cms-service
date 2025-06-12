@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"github.com/iancoleman/strcase"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/model"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
 	"github.com/ledaian41/go-cms-service/pkg/valuetype"
 	"hash/fnv"
 	"math/big"
@@ -24,7 +24,7 @@ func GenerateID() string {
 	return new(big.Int).SetUint64(uint64(hashed)).Text(36)
 }
 
-func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
+func QueryCreateNewTable(nodeType *node_type_model.NodeType) string {
 	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, ", strcase.ToSnake(nodeType.TID))
 	var columnDefs []string
 
@@ -39,7 +39,7 @@ func QueryCreateNewTable(nodeType *nodeType_model.NodeType) string {
 	return query
 }
 
-func QueryAddColumnToTable(tid string, pt *nodeType_model.PropertyType) string {
+func QueryAddColumnToTable(tid string, pt *node_type_model.PropertyType) string {
 	sqlType := valuetype.MapValueTypeToSQL(pt)
 	if len(sqlType) == 0 {
 		return ""

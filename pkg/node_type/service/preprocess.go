@@ -1,4 +1,4 @@
-package nodeType_service
+package node_type_service
 
 import (
 	"errors"

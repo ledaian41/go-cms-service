@@ -1,11 +1,11 @@
-package nodeType_service
+package node_type_service
 
 import (
 	"errors"
 	"fmt"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/model"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/sql_helper"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/utils"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/sql_helper"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/utils"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/valuetype"
 	"gorm.io/gorm"
@@ -47,7 +47,7 @@ func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 	var wg sync.WaitGroup
 	for _, nodeType := range nodeTypes {
 		wg.Add(1)
-		go func(nodeType *nodeType_model.NodeType) {
+		go func(nodeType *node_type_model.NodeType) {
 			defer wg.Done()
 			s.loadNodeTypeToDB(nodeType, ch)
 		}(nodeType)
@@ -58,8 +58,8 @@ func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 	}()
 }
 
-func (s *NodeTypeService) loadNodeTypeToDB(nodeType *nodeType_model.NodeType, ch chan<- string) {
-	var existing nodeType_model.NodeType
+func (s *NodeTypeService) loadNodeTypeToDB(nodeType *node_type_model.NodeType, ch chan<- string) {
+	var existing node_type_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Where("tid = ?", nodeType.TID).First(&existing).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			tid, _ := s.createNewNodeType(nodeType)
@@ -73,7 +73,7 @@ func (s *NodeTypeService) loadNodeTypeToDB(nodeType *nodeType_model.NodeType, ch
 	ch <- tid
 }
 
-func (s *NodeTypeService) createNewNodeType(nodeType *nodeType_model.NodeType) (string, error) {
+func (s *NodeTypeService) createNewNodeType(nodeType *node_type_model.NodeType) (string, error) {
 	if err := s.db.Exec(sql_helper.QueryCreateNewTable(nodeType)).Error; err != nil {
 		log.Printf("❌ Failed at create Table: %v", err)
 		return nodeType.TID, err
@@ -91,20 +91,20 @@ func (s *NodeTypeService) deleteColumn(tid, pid string) error {
 	return s.db.Exec(sql_helper.QueryDeleteColumnFromTable(tid, pid)).Error
 }
 
-func (s *NodeTypeService) updateNodeType(existing *nodeType_model.NodeType, newNodeType *nodeType_model.NodeType) (string, error) {
-	var currentPTs []*nodeType_model.PropertyType
+func (s *NodeTypeService) updateNodeType(existing *node_type_model.NodeType, newNodeType *node_type_model.NodeType) (string, error) {
+	var currentPTs []*node_type_model.PropertyType
 	if err := s.db.Model(&existing).Association("PropertyTypes").Find(&currentPTs); err != nil {
 		log.Printf("❌ Failed at query PropertyTypes: %v", err)
 		return newNodeType.TID, nil
 	}
 
-	currentMap := make(map[string]*nodeType_model.PropertyType)
+	currentMap := make(map[string]*node_type_model.PropertyType)
 	for _, pt := range currentPTs {
 		currentMap[pt.PID] = pt
 	}
 
-	newMap := make(map[string]*nodeType_model.PropertyType)
-	var toCreate []*nodeType_model.PropertyType
+	newMap := make(map[string]*node_type_model.PropertyType)
+	var toCreate []*node_type_model.PropertyType
 	for _, pt := range newNodeType.PropertyTypes {
 		pt.NodeTypeRefer = existing.ID
 		if currentMap[pt.PID] != nil {

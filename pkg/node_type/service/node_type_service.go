@@ -1,8 +1,8 @@
-package nodeType_service
+package node_type_service
 
 import (
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/model"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/sql_helper"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
@@ -20,7 +20,7 @@ func NewNodeTypeService(db *gorm.DB, fileService shared_interface.FileService) *
 }
 
 func (s *NodeTypeService) InitDatabase() {
-	err := s.db.AutoMigrate(&nodeType_model.NodeType{}, &nodeType_model.PropertyType{})
+	err := s.db.AutoMigrate(&node_type_model.NodeType{}, &node_type_model.PropertyType{})
 	if err != nil {
 		log.Printf("❌ Failed at AutoMigrate: %v", err)
 	}
@@ -28,7 +28,7 @@ func (s *NodeTypeService) InitDatabase() {
 }
 
 func (s *NodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
-	var nodeTypes []nodeType_model.NodeType
+	var nodeTypes []node_type_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Find(&nodeTypes).Error; err != nil {
 		log.Printf("❌ Failed at query NodeTypes: %v", err)
 	}
@@ -40,7 +40,7 @@ func (s *NodeTypeService) FetchNodeTypes() *[]shared_dto.NodeTypeDTO {
 }
 
 func (s *NodeTypeService) FetchNodeType(tid string) shared_dto.NodeTypeDTO {
-	var node nodeType_model.NodeType
+	var node node_type_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Where("tid = ?", tid).First(&node).Error; err != nil {
 		log.Printf("❌ Failed at query NodeTypes: %v", err)
 	}
@@ -48,13 +48,13 @@ func (s *NodeTypeService) FetchNodeType(tid string) shared_dto.NodeTypeDTO {
 }
 
 func (s *NodeTypeService) DeleteNodeType(tid string) (bool, error) {
-	var node nodeType_model.NodeType
+	var node node_type_model.NodeType
 	if err := s.db.Where("tid = ?", tid).First(&node).Error; err != nil {
 		log.Printf("❌ NodeType not found: %v", err)
 		return false, err
 	}
 
-	if err := s.db.Unscoped().Where("node_type_refer = ?", node.ID).Delete(&nodeType_model.PropertyType{}).Error; err != nil {
+	if err := s.db.Unscoped().Where("node_type_refer = ?", node.ID).Delete(&node_type_model.PropertyType{}).Error; err != nil {
 		log.Printf("❌ Failed to delete PropertyType: %v", err)
 	}
 

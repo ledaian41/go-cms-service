@@ -1,4 +1,4 @@
-package nodeType_handler
+package node_type_handler
 
 import (
 	"errors"

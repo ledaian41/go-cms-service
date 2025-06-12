@@ -3,26 +3,26 @@ package nodeType_utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/model"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 )
 
-func ReadSchemaJson(path string) (*nodeType_model.NodeType, error) {
+func ReadSchemaJson(path string) (*node_type_model.NodeType, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	var schema nodeType_model.NodeType
+	var schema node_type_model.NodeType
 	if err := json.Unmarshal(data, &schema); err != nil {
 		return nil, err
 	}
 	return &schema, nil
 }
 
-func ReadSchemasFromDir(path string) ([]*nodeType_model.NodeType, error) {
-	var schemas []*nodeType_model.NodeType
+func ReadSchemasFromDir(path string) ([]*node_type_model.NodeType, error) {
+	var schemas []*node_type_model.NodeType
 	pattern := filepath.Join(path, "*.json")
 	files, err := filepath.Glob(pattern)
 	if err != nil {

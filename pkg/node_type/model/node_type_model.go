@@ -1,4 +1,4 @@
-package nodeType_model
+package node_type_model
 
 import (
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"

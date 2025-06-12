@@ -9,8 +9,8 @@ import (
 	"github.com/ledaian41/go-cms-service/pkg/file/service"
 	"github.com/ledaian41/go-cms-service/pkg/helper/handler"
 	"github.com/ledaian41/go-cms-service/pkg/helper/service"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/handler"
-	"github.com/ledaian41/go-cms-service/pkg/nodetype/service"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/handler"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/service"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
@@ -28,7 +28,7 @@ func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	fileService := file_service.NewFileService()
-	nodeTypeService := nodeType_service.NewNodeTypeService(db, fileService)
+	nodeTypeService := node_type_service.NewNodeTypeService(db, fileService)
 	nodeTypeService.InitDatabase()
 
 	helperService := helper_service.NewHelperService(db)
@@ -38,7 +38,7 @@ func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
 	r.GET("helper/nodeType", helperHandler.FetchNodeType)
 	r.GET("helper/nodeType/delete", helperHandler.DeleteNodeType)
 
-	nodeTypeHandler := nodeType_handler.NewNodeTypeHandler(nodeTypeService)
+	nodeTypeHandler := node_type_handler.NewNodeTypeHandler(nodeTypeService)
 	r.GET("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ListApi)
 	r.GET("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ReadApi)
 	r.POST("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.CreateApi)
