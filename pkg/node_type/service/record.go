@@ -16,7 +16,12 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 		option.PageSize = 10 // default page size
 	}
 	offset := (int(option.Page) - 1) * int(option.PageSize)
-	if err := s.db.Table(tid).Limit(int(option.PageSize)).Offset(offset).Find(&records).Error; err != nil {
+	db := s.db.Table(tid).Limit(int(option.PageSize)).Offset(offset)
+	if len(option.SortBy) > 0 {
+		db.Order(option.SortBy)
+	}
+
+	if err := db.Find(&records).Error; err != nil {
 		return nil, nil, err
 	}
 

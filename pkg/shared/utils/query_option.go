@@ -9,6 +9,7 @@ type QueryOption struct {
 	ReferenceView string
 	Page          int32
 	PageSize      int8
+	SortBy        string
 }
 
 func (qo QueryOption) GetReferenceViewKeys() []string {
