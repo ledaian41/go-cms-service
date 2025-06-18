@@ -24,6 +24,9 @@ var validOperators = map[string]bool{
 	"equal":   true,
 	"include": true,
 	"in":      true,
+	"from":    true,
+	"to":      true,
+	"fromto":  true,
 }
 
 func (qo QueryOption) GetReferenceViewKeys() []string {
@@ -52,6 +55,10 @@ func (qo QueryOption) GetSearchQuery() []SearchQuery {
 			continue
 		}
 
+		if !checkValidQuery(operator, values[0]) {
+			continue
+		}
+
 		queries = append(queries, SearchQuery{
 			Field:    field,
 			Operator: operator,
@@ -59,6 +66,23 @@ func (qo QueryOption) GetSearchQuery() []SearchQuery {
 		})
 	}
 	return queries
+}
+
+func checkValidQuery(operator string, value string) bool {
+	switch operator {
+	case "from":
+		fallthrough
+	case "to":
+		if strings.Contains(value, ",") {
+			return false
+		}
+	case "fromto":
+		fromTo := strings.Split(value, ",")
+		if len(fromTo) != 2 || strings.TrimSpace(fromTo[0]) == "" || strings.TrimSpace(fromTo[1]) == "" {
+			return false
+		}
+	}
+	return true
 }
 
 func ParseInt(value string) int {

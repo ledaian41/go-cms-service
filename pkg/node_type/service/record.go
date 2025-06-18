@@ -20,7 +20,7 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 	if len(option.GetSearchQuery()) > 0 {
 		whereClause, values := sql_helper.BuildSearchConditions(option.GetSearchQuery())
 		if values != nil {
-			db = db.Where(whereClause, values)
+			db = db.Where(whereClause, values...)
 		}
 	}
 	if len(option.SortBy) > 0 {

@@ -5,7 +5,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
-	shared_utils "github.com/ledaian41/go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/value_type"
 	"hash/fnv"
 	"math/big"
@@ -63,9 +63,9 @@ func QueryTableColumns(tid string) string {
 	`, tid)
 }
 
-func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []string) {
+func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []interface{}) {
 	var conditions []string
-	var values []string
+	var values []interface{}
 
 	for _, query := range queries {
 		switch query.Operator {
@@ -77,7 +77,22 @@ func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []string
 			values = append(values, fmt.Sprintf("%%%s%%", strings.TrimSpace(query.Value)))
 		case "in":
 			conditions = append(conditions, fmt.Sprintf("%s IN ?", query.Field))
-			values = append(values, strings.Split(query.Value, ",")...)
+			queryValue := strings.Split(query.Value, ",")
+			interfaceValues := make([]interface{}, len(queryValue))
+			for i, v := range queryValue {
+				interfaceValues[i] = v
+			}
+			values = append(values, interfaceValues)
+		case "from":
+			conditions = append(conditions, fmt.Sprintf("%s >= ?", query.Field))
+			values = append(values, query.Value)
+		case "to":
+			conditions = append(conditions, fmt.Sprintf("%s <= ?", query.Field))
+			values = append(values, query.Value)
+		case "fromto":
+			fromTo := strings.Split(query.Value, ",")
+			conditions = append(conditions, fmt.Sprintf("%s BETWEEN ? AND ?", query.Field))
+			values = append(values, strings.TrimSpace(fromTo[0]), strings.TrimSpace(fromTo[1]))
 		}
 	}
 
