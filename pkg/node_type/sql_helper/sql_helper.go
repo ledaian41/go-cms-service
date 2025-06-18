@@ -5,6 +5,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
+	shared_utils "github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/value_type"
 	"hash/fnv"
 	"math/big"
@@ -60,4 +61,29 @@ func QueryTableColumns(tid string) string {
 		WHERE table_schema = 'public' AND table_name = '%s'
 		ORDER BY ordinal_position
 	`, tid)
+}
+
+func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []string) {
+	var conditions []string
+	var values []string
+
+	for _, query := range queries {
+		switch query.Operator {
+		case "equal":
+			conditions = append(conditions, fmt.Sprintf("%s = ?", query.Field))
+			values = append(values, query.Value)
+		case "like":
+			conditions = append(conditions, fmt.Sprintf("%s ILIKE ?", query.Field))
+			values = append(values, fmt.Sprintf("%%%s%%", strings.TrimSpace(query.Value)))
+		case "in":
+			conditions = append(conditions, fmt.Sprintf("%s IN ?", query.Field))
+			values = append(values, strings.Split(query.Value, ",")...)
+		}
+	}
+
+	if len(conditions) == 0 {
+		return "", nil
+	}
+
+	return strings.Join(conditions, " AND "), values
 }

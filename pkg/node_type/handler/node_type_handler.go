@@ -42,6 +42,7 @@ func (n *NodeType) ListApi(c *gin.Context) {
 		PageSize:      int8(shared_utils.ParseInt(c.Query("pageSize"))),
 		Page:          int32(shared_utils.ParseInt(c.Query("page"))),
 		SortBy:        c.Query("sort"),
+		Query:         c.Request.URL.Query(),
 	})
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())

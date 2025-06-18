@@ -16,19 +16,25 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 		option.PageSize = 10 // default page size
 	}
 	offset := (int(option.Page) - 1) * int(option.PageSize)
-	db := s.db.Table(tid).Limit(int(option.PageSize)).Offset(offset)
+	db := s.db.Table(tid)
+	if len(option.GetSearchQuery()) > 0 {
+		whereClause, values := sql_helper.BuildSearchConditions(option.GetSearchQuery())
+		if values != nil {
+			db = db.Where(whereClause, values)
+		}
+	}
 	if len(option.SortBy) > 0 {
 		db.Order(option.SortBy)
 	}
 
+	var total int64
+	db.Count(&total)
+
+	db.Limit(int(option.PageSize)).Offset(offset)
 	if err := db.Find(&records).Error; err != nil {
 		return nil, nil, err
 	}
 
-	var total int64
-	if err := s.db.Table(tid).Count(&total).Error; err != nil {
-		return nil, nil, err
-	}
 	pagination := &shared_dto.PaginationDTO{
 		Page:     option.Page,
 		PageSize: option.PageSize,
