@@ -72,7 +72,7 @@ func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []string
 		case "equal":
 			conditions = append(conditions, fmt.Sprintf("%s = ?", query.Field))
 			values = append(values, query.Value)
-		case "like":
+		case "include":
 			conditions = append(conditions, fmt.Sprintf("%s ILIKE ?", query.Field))
 			values = append(values, fmt.Sprintf("%%%s%%", strings.TrimSpace(query.Value)))
 		case "in":
