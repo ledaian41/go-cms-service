@@ -1,7 +1,6 @@
 package node_type_handler
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
@@ -15,13 +14,6 @@ type NodeType struct {
 
 func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeService) *NodeType {
 	return &NodeType{nodeTypeService: nodeTypeService}
-}
-
-func (n *NodeType) checkTypeId(typeId string) error {
-	if n.nodeTypeService.CheckNodeTypeExist(typeId) {
-		return nil
-	}
-	return fmt.Errorf("%s does not exist", typeId)
 }
 
 // ListApi godoc

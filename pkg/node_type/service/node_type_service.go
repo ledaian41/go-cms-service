@@ -1,6 +1,7 @@
 package node_type_service
 
 import (
+	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
@@ -64,13 +65,18 @@ func (s *NodeTypeService) DeleteNodeType(tid string) (bool, error) {
 }
 
 func (s *NodeTypeService) CheckNodeTypeExist(tid string) bool {
-	var exists bool
-	query := `
-		SELECT EXISTS (
-			SELECT FROM information_schema.tables 
-			WHERE table_schema = 'public' AND table_name = ?
-		)
-	`
-	s.db.Raw(query, tid).Scan(&exists)
-	return exists
+	//var exists bool
+	//query := `
+	//	SELECT EXISTS (
+	//		SELECT FROM information_schema.tables
+	//		WHERE table_schema = 'public' AND table_name = ?
+	//	)
+	//`
+	//s.db.Raw(query, tid).Scan(&exists)
+	//return exists
+	var count int64
+	if err := s.db.Model(&node_type_model.NodeType{}).Where("tid = ?", strcase.ToLowerCamel(tid)).Count(&count).Error; err != nil {
+		return false
+	}
+	return count > 0
 }
