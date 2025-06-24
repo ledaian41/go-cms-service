@@ -3,7 +3,7 @@ package helper_service
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ledaian41/go-cms-service/pkg/node_type/sql_helper"
+	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
 	"io/ioutil"

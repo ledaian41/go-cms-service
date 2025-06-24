@@ -1,10 +1,10 @@
-package node_type_service
+package helper_service
 
 import (
 	"errors"
 	"fmt"
+	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
-	"github.com/ledaian41/go-cms-service/pkg/node_type/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/node_type/utils"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/value_type"
@@ -14,7 +14,7 @@ import (
 	"sync"
 )
 
-func (s *NodeTypeService) LoadSchema(path string, ch chan<- string) {
+func (s *HelperService) LoadSchema(path string, ch chan<- string) {
 	if shared_utils.IsJsonPath(path) {
 		s.loadSchemaFile(path, ch)
 		return
@@ -25,7 +25,7 @@ func (s *NodeTypeService) LoadSchema(path string, ch chan<- string) {
 	}
 }
 
-func (s *NodeTypeService) loadSchemaFile(path string, ch chan<- string) {
+func (s *HelperService) loadSchemaFile(path string, ch chan<- string) {
 	nodeType, err := nodeType_utils.ReadSchemaJson(path)
 	if err != nil {
 		log.Printf("❌ Failed at LoadSchema: %v", err)
@@ -36,7 +36,7 @@ func (s *NodeTypeService) loadSchemaFile(path string, ch chan<- string) {
 	close(ch)
 }
 
-func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
+func (s *HelperService) loadSchemaDirectory(path string, ch chan<- string) {
 	nodeTypes, err := nodeType_utils.ReadSchemasFromDir(path)
 	if err != nil {
 		log.Printf("❌ Failed at LoadSchema: %v", err)
@@ -58,7 +58,7 @@ func (s *NodeTypeService) loadSchemaDirectory(path string, ch chan<- string) {
 	}()
 }
 
-func (s *NodeTypeService) loadNodeTypeToDB(nodeType *node_type_model.NodeType, ch chan<- string) {
+func (s *HelperService) loadNodeTypeToDB(nodeType *node_type_model.NodeType, ch chan<- string) {
 	var existing node_type_model.NodeType
 	if err := s.db.Preload("PropertyTypes").Where("tid = ?", nodeType.TID).First(&existing).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -73,7 +73,7 @@ func (s *NodeTypeService) loadNodeTypeToDB(nodeType *node_type_model.NodeType, c
 	ch <- tid
 }
 
-func (s *NodeTypeService) createNewNodeType(nodeType *node_type_model.NodeType) (string, error) {
+func (s *HelperService) createNewNodeType(nodeType *node_type_model.NodeType) (string, error) {
 	if err := s.db.Exec(sql_helper.QueryCreateNewTable(nodeType)).Error; err != nil {
 		log.Printf("❌ Failed at create Table: %v", err)
 		return nodeType.TID, err
@@ -86,12 +86,12 @@ func (s *NodeTypeService) createNewNodeType(nodeType *node_type_model.NodeType) 
 	return nodeType.TID, nil
 }
 
-func (s *NodeTypeService) deleteColumn(tid, pid string) error {
+func (s *HelperService) deleteColumn(tid, pid string) error {
 	log.Printf("Delete column: %s in table %s", pid, tid)
 	return s.db.Exec(sql_helper.QueryDeleteColumnFromTable(tid, pid)).Error
 }
 
-func (s *NodeTypeService) updateNodeType(existing *node_type_model.NodeType, newNodeType *node_type_model.NodeType) (string, error) {
+func (s *HelperService) updateNodeType(existing *node_type_model.NodeType, newNodeType *node_type_model.NodeType) (string, error) {
 	var currentPTs []*node_type_model.PropertyType
 	if err := s.db.Model(&existing).Association("PropertyTypes").Find(&currentPTs); err != nil {
 		log.Printf("❌ Failed at query PropertyTypes: %v", err)

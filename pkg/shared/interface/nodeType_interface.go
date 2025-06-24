@@ -6,7 +6,6 @@ import (
 )
 
 type NodeTypeService interface {
-	LoadSchema(filePath string, ch chan<- string)
 	FetchNodeTypes() *[]shared_dto.NodeTypeDTO
 	FetchNodeType(tid string) shared_dto.NodeTypeDTO
 	DeleteNodeType(tid string) (bool, error)

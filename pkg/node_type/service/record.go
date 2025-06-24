@@ -1,7 +1,7 @@
 package node_type_service
 
 import (
-	"github.com/ledaian41/go-cms-service/pkg/node_type/sql_helper"
+	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 )

@@ -20,7 +20,7 @@ func NewHelperHandler(nodeTypeService shared_interface.NodeTypeService, helperSe
 func (h *HelperHandler) LoadSchema(c *gin.Context) {
 	filePath := c.Query("filePath")
 	messageCh := make(chan string)
-	go h.nodeTypeService.LoadSchema(filePath, messageCh)
+	go h.helperService.LoadSchema(filePath, messageCh)
 	// Server-Sent Events (SSE) - Config Header streaming message
 	c.Writer.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
