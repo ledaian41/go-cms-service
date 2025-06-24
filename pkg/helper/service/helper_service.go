@@ -23,8 +23,9 @@ func (s *HelperService) LoadJsonData(path string, ch chan<- string) {
 	if shared_utils.IsJsonPath(path) {
 		content := loadJsonFile(path)
 		s.loadJsonToDB(content, ch)
-		return
+		s.tableColumnCache.Clear()
 	}
+
 }
 
 func (s *HelperService) loadJsonToDB(content []map[string]interface{}, ch chan<- string) {
