@@ -71,3 +71,15 @@ func (s *NodeTypeService) CheckNodeTypeExist(tid string) bool {
 	}
 	return count > 0
 }
+
+func (s *NodeTypeService) FetchPropertyTypesByTid(tid string) []shared_dto.PropertyTypeDTO {
+	var nodeTypeId string
+	s.db.Table("node_types").Select("id").Where("tid = ?", tid).Scan(&nodeTypeId)
+	var propertyTypes []node_type_model.PropertyType
+	s.db.Table("property_types").Where("node_type_refer = ?", nodeTypeId).Find(&propertyTypes)
+	result := make([]shared_dto.PropertyTypeDTO, 0)
+	for _, pt := range propertyTypes {
+		result = append(result, pt.PropertyTypeDTO())
+	}
+	return result
+}

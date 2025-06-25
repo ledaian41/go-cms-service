@@ -10,6 +10,7 @@ type NodeTypeService interface {
 	FetchNodeType(tid string) shared_dto.NodeTypeDTO
 	DeleteNodeType(tid string) (bool, error)
 	CheckNodeTypeExist(tid string) bool
+	FetchPropertyTypesByTid(tid string) []shared_dto.PropertyTypeDTO
 	FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error)
 	FetchRecord(tid string, id string) (map[string]interface{}, error)
 	CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error)

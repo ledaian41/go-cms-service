@@ -24,9 +24,9 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 	var joinSpec sql_helper.JoinSpec
 	referenceView := option.GetReferenceViewKeys()
 	if len(referenceView) > 0 {
-		nodeType := s.FetchNodeType(tid)
+		propertyTypes := s.FetchPropertyTypesByTid(tid)
 		var referencePts []shared_dto.PropertyTypeDTO
-		for _, pt := range nodeType.PropertyTypes {
+		for _, pt := range propertyTypes {
 			contain := slices.Contains(referenceView, pt.PID)
 			reference := string(value_type.Reference)
 			if contain && (pt.ValueType == reference || pt.ValueType == string(value_type.References)) {
@@ -35,10 +35,10 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 		}
 		hasReference = len(referencePts) > 0
 		if hasReference {
-			joinSpec = sql_helper.NewJoinSpec(nodeType.TID, referencePts)
+			joinSpec = sql_helper.NewJoinSpec(tid, referencePts)
 			query := sql_helper.QueryJoin(joinSpec)
 			if len(query) > 0 {
-				db.Select(sql_helper.BuildSelectFields(nodeType.TID, joinSpec)).Joins(query)
+				db.Select(sql_helper.BuildSelectFields(tid, joinSpec)).Joins(query)
 			}
 		}
 	}

@@ -8,8 +8,8 @@ import (
 
 type NodeType struct {
 	gorm.Model
-	ID            string          `gorm:"primaryKey;type:char(8)"`
-	TID           string          `json:"tid" gorm:"uniqueIndex;column:tid"`
+	ID            string          `gorm:"primaryKey;type:char(8);index"`
+	TID           string          `json:"tid" gorm:"column:tid;index:idx_node_types_tid"`
 	PropertyTypes []*PropertyType `json:"propertyTypes" gorm:"foreignKey:NodeTypeRefer"`
 }
 
@@ -20,7 +20,7 @@ func (n *NodeType) BeforeCreate(_ *gorm.DB) (err error) {
 
 type PropertyType struct {
 	gorm.Model
-	ID             string `gorm:"primaryKey;type:char(8)"`
+	ID             string `gorm:"primaryKey;type:char(8);index"`
 	NodeTypeRefer  string
 	PID            string `json:"pid" gorm:"column:pid"`
 	ValueType      string `json:"valueType"`
