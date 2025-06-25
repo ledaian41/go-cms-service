@@ -1,6 +1,7 @@
 package shared_utils
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ type SearchQuery struct {
 }
 
 type QueryOption struct {
+	TypeId        string
 	ReferenceView string
 	Page          int32
 	PageSize      int8
@@ -56,6 +58,14 @@ func (qo QueryOption) GetSearchQuery() []SearchQuery {
 		}
 
 		if !checkValidQuery(operator, values[0]) {
+			continue
+		}
+
+		if !strings.Contains(field, ".") {
+			field = fmt.Sprintf("%s.%s", qo.TypeId, field)
+		}
+
+		if strings.Count(field, ".") > 1 {
 			continue
 		}
 

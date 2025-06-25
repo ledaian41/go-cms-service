@@ -63,6 +63,15 @@ func QueryTableColumns(tid string) string {
 	`, tid)
 }
 
+func QueryTableExist(tid string) string {
+	return fmt.Sprintf(`
+		SELECT EXISTS (
+			SELECT FROM information_schema.tables
+			WHERE table_schema = 'public' AND table_name = '%s'
+		)
+	`, tid)
+}
+
 func BuildSearchConditions(queries []shared_utils.SearchQuery) (string, []interface{}) {
 	var conditions []string
 	var values []interface{}

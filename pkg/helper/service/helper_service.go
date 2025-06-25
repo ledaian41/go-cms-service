@@ -25,7 +25,6 @@ func (s *HelperService) LoadJsonData(path string, ch chan<- string) {
 		s.loadJsonToDB(content, ch)
 		s.tableColumnCache.Clear()
 	}
-
 }
 
 func (s *HelperService) loadJsonToDB(content []map[string]interface{}, ch chan<- string) {

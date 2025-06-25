@@ -3,6 +3,7 @@ package shared_utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"log"
 	"os"
 	"strings"
@@ -30,4 +31,15 @@ func RandomID(bytes uint8) string {
 		log.Printf("❌ Failed to generate random ID: %v", err)
 	}
 	return hex.EncodeToString(b)
+}
+
+func IsJSON(str string) bool {
+	str = strings.TrimSpace(str)
+	if (strings.HasPrefix(str, "{") && strings.HasSuffix(str, "}")) ||
+		(strings.HasPrefix(str, "[") && strings.HasSuffix(str, "]")) {
+		var js interface{}
+		return json.Unmarshal([]byte(str), &js) == nil
+	}
+
+	return false
 }

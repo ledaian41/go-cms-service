@@ -4,6 +4,8 @@ import (
 	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
+	"github.com/ledaian41/go-cms-service/pkg/value_type"
+	"slices"
 )
 
 func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
@@ -17,8 +19,33 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 	}
 	offset := (int(option.Page) - 1) * int(option.PageSize)
 	db := s.db.Table(tid)
-	if len(option.GetSearchQuery()) > 0 {
-		whereClause, values := sql_helper.BuildSearchConditions(option.GetSearchQuery())
+
+	var hasReference bool
+	var joinSpec sql_helper.JoinSpec
+	referenceView := option.GetReferenceViewKeys()
+	if len(referenceView) > 0 {
+		nodeType := s.FetchNodeType(tid)
+		var referencePts []shared_dto.PropertyTypeDTO
+		for _, pt := range nodeType.PropertyTypes {
+			contain := slices.Contains(referenceView, pt.PID)
+			reference := string(value_type.Reference)
+			if contain && (pt.ValueType == reference || pt.ValueType == string(value_type.References)) {
+				referencePts = append(referencePts, pt)
+			}
+		}
+		hasReference = len(referencePts) > 0
+		if hasReference {
+			joinSpec = sql_helper.NewJoinSpec(nodeType.TID, referencePts)
+			query := sql_helper.QueryJoin(joinSpec)
+			if len(query) > 0 {
+				db.Select(sql_helper.BuildSelectFields(nodeType.TID, joinSpec)).Joins(query)
+			}
+		}
+	}
+
+	searchQuery := option.GetSearchQuery()
+	if len(searchQuery) > 0 {
+		whereClause, values := sql_helper.BuildSearchConditions(searchQuery)
 		if values != nil {
 			db = db.Where(whereClause, values...)
 		}
@@ -42,6 +69,9 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 	}
 	pagination.CalculateTotalPage()
 
+	if hasReference {
+		records = sql_helper.FormatJoinResponse(records, joinSpec)
+	}
 	return records, pagination, nil
 }
 

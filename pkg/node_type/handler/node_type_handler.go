@@ -28,9 +28,9 @@ func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeService) *NodeT
 // @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
 	typeId := strcase.ToSnake(c.Param("typeId"))
-	referenceView := c.Query("referenceView")
 	records, pagination, err := n.nodeTypeService.FetchRecords(typeId, shared_utils.QueryOption{
-		ReferenceView: referenceView,
+		TypeId:        typeId,
+		ReferenceView: c.Query("referenceView"),
 		PageSize:      int8(shared_utils.ParseInt(c.Query("pageSize"))),
 		Page:          int32(shared_utils.ParseInt(c.Query("page"))),
 		SortBy:        c.Query("sort"),
