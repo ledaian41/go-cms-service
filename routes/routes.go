@@ -19,6 +19,7 @@ import (
 
 func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
 	r := gin.Default()
+	r.Use(middleware.RateLimitMiddleware())
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "pong"})
