@@ -10,6 +10,7 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -96,7 +97,7 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 		go func(pid string, fh *multipart.FileHeader) {
 			defer wg.Done()
 
-			fileInfo, err := s.fileService.SaveFile(fh, fmt.Sprintf("./%s/files/", config.Env.CachePath))
+			fileInfo, err := s.fileService.SaveFile(fh, fmt.Sprintf("./%s/files/%s/", config.Env.CachePath, nodeTypeDTO.TID))
 			if err != nil {
 				filesChan <- fileResult{
 					pid: pid,
@@ -129,4 +130,17 @@ func (s *NodeTypeService) PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, raw
 	}
 
 	return result, nil
+}
+
+func (s *NodeTypeService) ProcessFilePath(record map[string]interface{}) {
+	for k, v := range record {
+		str, ok := v.(string)
+		if !ok {
+			continue
+		}
+
+		if strings.HasPrefix(str, "cache/files") {
+			record[k] = config.Env.AppHost + strings.Replace(str, "cache/files", "/file", 1)
+		}
+	}
 }

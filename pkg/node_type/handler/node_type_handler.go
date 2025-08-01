@@ -36,6 +36,9 @@ func (n *NodeType) ListApi(c *gin.Context) {
 		SortBy:        c.Query("sort"),
 		Query:         c.Request.URL.Query(),
 	})
+	for _, record := range records {
+		n.nodeTypeService.ProcessFilePath(record)
+	}
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
@@ -61,6 +64,7 @@ func (n *NodeType) ListApi(c *gin.Context) {
 // @Router /{typeId}/{id} [get]
 func (n *NodeType) ReadApi(c *gin.Context) {
 	result, err := n.nodeTypeService.FetchRecord(c.Param("typeId"), c.Param("id"))
+	n.nodeTypeService.ProcessFilePath(result)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return

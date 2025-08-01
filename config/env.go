@@ -17,6 +17,7 @@ type AppConfig struct {
 	RedisHost              string
 	MaxUploadFileSize      int64
 	MaxTotalUploadFileSize int64
+	AppHost                string
 }
 
 func LoadConfig() {
@@ -37,5 +38,6 @@ func LoadConfig() {
 		RedisHost:              os.Getenv("REDIS_HOST"),
 		MaxUploadFileSize:      maxUploadFileSize,
 		MaxTotalUploadFileSize: maxTotalUploadFileSize,
+		AppHost:                os.Getenv("APP_HOST"),
 	}
 }

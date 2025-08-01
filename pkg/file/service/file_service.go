@@ -31,7 +31,7 @@ func (s FileService) SaveFile(file *multipart.FileHeader, uploadDir string) (*fi
 		return nil, fmt.Errorf("mkdir error: %v", err)
 	}
 
-	filepath, err := file_utils.GenerateUploadPath(file.Filename)
+	uploadPath, err := file_utils.GenerateUploadPath(file.Filename, uploadDir)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (s FileService) SaveFile(file *multipart.FileHeader, uploadDir string) (*fi
 	}
 	defer src.Close()
 
-	dst, err := os.Create(filepath)
+	dst, err := os.Create(uploadPath)
 	if err != nil {
 		return nil, fmt.Errorf("create new file error: %v", err)
 	}
@@ -54,7 +54,7 @@ func (s FileService) SaveFile(file *multipart.FileHeader, uploadDir string) (*fi
 
 	return &file_model.FileInfo{
 		OriginalName: file.Filename,
-		SavedPath:    filepath,
+		SavedPath:    uploadPath,
 		Size:         file.Size,
 		ContentType:  file.Header.Get("Content-Type"),
 	}, nil

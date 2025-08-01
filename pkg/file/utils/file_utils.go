@@ -2,7 +2,6 @@ package file_utils
 
 import (
 	"fmt"
-	"github.com/ledaian41/go-cms-service/config"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"os"
 	"path/filepath"
@@ -24,11 +23,11 @@ func sanitizeFileName(fileName string) string {
 	return fileName
 }
 
-func GenerateUploadPath(fileName string) (string, error) {
+func GenerateUploadPath(fileName string, baseDir string) (string, error) {
 	now := time.Now()
 
-	uploadDir := fmt.Sprintf("%s/files/%d/%02d/%02d",
-		config.Env.CachePath,
+	uploadDir := fmt.Sprintf("%s/%d/%02d/%02d",
+		baseDir,
 		now.Year(),
 		now.Month(),
 		now.Day(),
