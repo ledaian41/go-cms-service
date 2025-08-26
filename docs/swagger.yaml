@@ -16,21 +16,74 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get all nodes of a specific type
+      description: |-
+        Get nodes of a specific type with pagination, sorting, and flexible filter syntax.
+        \n
+        **Filtering syntax** (all remaining URL query params are interpreted as filters):
+        - Pattern: `{field}_{operator}={value}`
+        - Supported operators: `equal`, `include`, `in`, `from`, `to`, `fromto`
+        - Semantics:
+        * `equal`: exact match (e.g. `status_equal=published`)
+        * `include`: substring/contains (e.g. `title_include=hello`)
+        * `in`: membership list, comma-separated (e.g. `type_in=article,page`)
+        * `from`: lower bound (>=), typically for dates/numbers (e.g. `createdAt_from=2025-01-01T00:00:00Z`)
+        * `to`: upper bound (<=) (e.g. `createdAt_to=2025-12-31T23:59:59Z`)
+        * `fromto`: range (e.g. `price_fromto=10,100`)
+        - Examples: `GET /{typeId}?title_include=guide&status_in=draft,published&createdAt_from=2025-01-01T00:00:00Z`
+        \n
+        **Sorting syntax**
+        - Pattern: `<field> <asc|desc>`; default direction is `asc` if omitted (e.g., `createdAt` == `createdAt asc`)
+        - Multiple fields: separate by comma, evaluated left-to-right (e.g., `name desc,age asc`)
+        - URL encoding: encode spaces as `%20` or `+` (e.g., `name%20desc,age%20asc`)
+        - Examples: `GET /{typeId}?sort=createdAt%20desc,id`, `GET /{typeId}?sort=name%20desc,age%20asc`
       parameters:
       - description: Type ID
         in: path
         name: typeId
         required: true
         type: string
+      - default: 1
+        description: Page number (1-based)
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page (1-1000)
+        in: query
+        maximum: 1000
+        minimum: 1
+        name: pageSize
+        type: integer
+      - description: 'Sort expression: `<field> <asc|desc>`, multiple fields separated
+          by comma. Example: `name desc,age asc`. Default direction is `asc` if omitted.
+          Use `%20` (or `+`) to encode spaces in URLs: `name%20desc,age%20asc`'
+        in: query
+        name: sort
+        type: string
+      - description: 'Dynamic filters: `{field}_{operator}={value}`. Operators: `equal|include|in|from|to|fromto`.
+          Example: `name_equal=ABC&age_from=20`'
+        in: query
+        name: filter
+        type: string
+      - description: true or field name to fetch related records
+        in: query
+        name: referenceView
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: '{ items: [...], pagination: { page, pageSize, total, hasNext,
+            nextCursor? } }'
+          schema:
+            additionalProperties: true
+            type: object
         "400":
-          description: Bad Request
-      summary: List all nodes by type
+          description: bad request
+          schema:
+            type: string
+      summary: List nodes by type
       tags:
       - NodeType
     post:

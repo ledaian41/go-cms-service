@@ -1,11 +1,12 @@
 package node_type_handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
-	"net/http"
 )
 
 type NodeType struct {
@@ -17,14 +18,37 @@ func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeService) *NodeT
 }
 
 // ListApi godoc
-// @Summary List all nodes by type
-// @Description Get all nodes of a specific type
+// @Summary List nodes by type
+// @Description Get nodes of a specific type with pagination, sorting, and flexible filter syntax.
+// @Description \n
+// @Description **Filtering syntax** (all remaining URL query params are interpreted as filters):
+// @Description - Pattern: `{field}_{operator}={value}`
+// @Description - Supported operators: `equal`, `include`, `in`, `from`, `to`, `fromto`
+// @Description - Semantics:
+// @Description   * `equal`: exact match (e.g. `status_equal=published`)
+// @Description   * `include`: substring/contains (e.g. `title_include=hello`)
+// @Description   * `in`: membership list, comma-separated (e.g. `type_in=article,page`)
+// @Description   * `from`: lower bound (>=), typically for dates/numbers (e.g. `createdAt_from=2025-01-01T00:00:00Z`)
+// @Description   * `to`: upper bound (<=) (e.g. `createdAt_to=2025-12-31T23:59:59Z`)
+// @Description   * `fromto`: range (e.g. `price_fromto=10,100`)
+// @Description - Examples: `GET /{typeId}?title_include=guide&status_in=draft,published&createdAt_from=2025-01-01T00:00:00Z`
+// @Description \n
+// @Description **Sorting syntax**
+// @Description - Pattern: `<field> <asc|desc>`; default direction is `asc` if omitted (e.g., `createdAt` == `createdAt asc`)
+// @Description - Multiple fields: separate by comma, evaluated left-to-right (e.g., `name desc,age asc`)
+// @Description - URL encoding: encode spaces as `%20` or `+` (e.g., `name%20desc,age%20asc`)
+// @Description - Examples: `GET /{typeId}?sort=createdAt%20desc,id`, `GET /{typeId}?sort=name%20desc,age%20asc`
 // @Tags NodeType
 // @Accept json
 // @Produce json
 // @Param typeId path string true "Type ID"
-// @Success 200
-// @Failure 400
+// @Param page query int false "Page number (1-based)" default(1) minimum(1)
+// @Param pageSize query int false "Items per page (1-1000)" default(10) minimum(1) maximum(1000)
+// @Param sort query string false "Sort expression: `<field> <asc|desc>`, multiple fields separated by comma. Example: `name desc,age asc`. Default direction is `asc` if omitted. Use `%20` (or `+`) to encode spaces in URLs: `name%20desc,age%20asc`"
+// @Param filter query string false "Dynamic filters: `{field}_{operator}={value}`. Operators: `equal|include|in|from|to|fromto`. Example: `name_equal=ABC&age_from=20`"
+// @Param referenceView query string false "true or field name to fetch related records"
+// @Success 200 {object} map[string]interface{} "{ items: [...], pagination: { page, pageSize, total, hasNext, nextCursor? } }"
+// @Failure 400 {string} string "bad request"
 // @Router /{typeId} [get]
 func (n *NodeType) ListApi(c *gin.Context) {
 	typeId := strcase.ToSnake(c.Param("typeId"))

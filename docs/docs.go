@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/{typeId}": {
             "get": {
-                "description": "Get all nodes of a specific type",
+                "description": "Get nodes of a specific type with pagination, sorting, and flexible filter syntax.\n\\n\n**Filtering syntax** (all remaining URL query params are interpreted as filters):\n- Pattern: ` + "`" + `{field}_{operator}={value}` + "`" + `\n- Supported operators: ` + "`" + `equal` + "`" + `, ` + "`" + `include` + "`" + `, ` + "`" + `in` + "`" + `, ` + "`" + `from` + "`" + `, ` + "`" + `to` + "`" + `, ` + "`" + `fromto` + "`" + `\n- Semantics:\n* ` + "`" + `equal` + "`" + `: exact match (e.g. ` + "`" + `status_equal=published` + "`" + `)\n* ` + "`" + `include` + "`" + `: substring/contains (e.g. ` + "`" + `title_include=hello` + "`" + `)\n* ` + "`" + `in` + "`" + `: membership list, comma-separated (e.g. ` + "`" + `type_in=article,page` + "`" + `)\n* ` + "`" + `from` + "`" + `: lower bound (\u003e=), typically for dates/numbers (e.g. ` + "`" + `createdAt_from=2025-01-01T00:00:00Z` + "`" + `)\n* ` + "`" + `to` + "`" + `: upper bound (\u003c=) (e.g. ` + "`" + `createdAt_to=2025-12-31T23:59:59Z` + "`" + `)\n* ` + "`" + `fromto` + "`" + `: range (e.g. ` + "`" + `price_fromto=10,100` + "`" + `)\n- Examples: ` + "`" + `GET /{typeId}?title_include=guide\u0026status_in=draft,published\u0026createdAt_from=2025-01-01T00:00:00Z` + "`" + `\n\\n\n**Sorting syntax**\n- Pattern: ` + "`" + `\u003cfield\u003e \u003casc|desc\u003e` + "`" + `; default direction is ` + "`" + `asc` + "`" + ` if omitted (e.g., ` + "`" + `createdAt` + "`" + ` == ` + "`" + `createdAt asc` + "`" + `)\n- Multiple fields: separate by comma, evaluated left-to-right (e.g., ` + "`" + `name desc,age asc` + "`" + `)\n- URL encoding: encode spaces as ` + "`" + `%20` + "`" + ` or ` + "`" + `+` + "`" + ` (e.g., ` + "`" + `name%20desc,age%20asc` + "`" + `)\n- Examples: ` + "`" + `GET /{typeId}?sort=createdAt%20desc,id` + "`" + `, ` + "`" + `GET /{typeId}?sort=name%20desc,age%20asc` + "`" + `",
                 "consumes": [
                     "application/json"
                 ],
@@ -36,7 +36,7 @@ const docTemplate = `{
                 "tags": [
                     "NodeType"
                 ],
-                "summary": "List all nodes by type",
+                "summary": "List nodes by type",
                 "parameters": [
                     {
                         "type": "string",
@@ -44,14 +44,56 @@ const docTemplate = `{
                         "name": "typeId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number (1-based)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page (1-1000)",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort expression: ` + "`" + `\u003cfield\u003e \u003casc|desc\u003e` + "`" + `, multiple fields separated by comma. Example: ` + "`" + `name desc,age asc` + "`" + `. Default direction is ` + "`" + `asc` + "`" + ` if omitted. Use ` + "`" + `%20` + "`" + ` (or ` + "`" + `+` + "`" + `) to encode spaces in URLs: ` + "`" + `name%20desc,age%20asc` + "`" + `",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dynamic filters: ` + "`" + `{field}_{operator}={value}` + "`" + `. Operators: ` + "`" + `equal|include|in|from|to|fromto` + "`" + `. Example: ` + "`" + `name_equal=ABC\u0026age_from=20` + "`" + `",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "true or field name to fetch related records",
+                        "name": "referenceView",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "{ items: [...], pagination: { page, pageSize, total, hasNext, nextCursor? } }",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
