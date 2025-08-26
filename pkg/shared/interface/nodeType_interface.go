@@ -16,6 +16,7 @@ type NodeTypeService interface {
 	CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error)
 	UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error)
 	DeleteRecord(tid string, id string) error
+	RestoreRecord(tid string, id string) error
 	PreprocessFile(nodeTypeDTO shared_dto.NodeTypeDTO, rawData map[string]interface{}) (map[string]interface{}, error)
 	ProcessFilePath(record map[string]interface{})
 }

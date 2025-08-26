@@ -5,7 +5,9 @@ import (
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/value_type"
+	"gorm.io/gorm"
 	"slices"
+	"time"
 )
 
 func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
@@ -19,6 +21,7 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 	}
 	offset := (int(option.Page) - 1) * int(option.PageSize)
 	db := s.db.Table(tid)
+	db = db.Where("deleted_at IS NULL")
 
 	var hasReference bool
 	var joinSpec sql_helper.JoinSpec
@@ -77,7 +80,7 @@ func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOpti
 
 func (s *NodeTypeService) FetchRecord(tid string, id string) (map[string]interface{}, error) {
 	var result map[string]interface{}
-	if err := s.db.Table(tid).Find(&result, "id = ?", id).Error; err != nil {
+	if err := s.db.Table(tid).Where("id = ? AND deleted_at IS NULL", id).Find(&result).Error; err != nil {
 		return nil, err
 	}
 	if result == nil {
@@ -97,7 +100,7 @@ func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) 
 
 func (s *NodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error) {
 	delete(data, "id")
-	result := s.db.Table(tid).Where("id = ?", id).Updates(&data)
+	result := s.db.Table(tid).Where("id = ? AND deleted_at IS NULL", id).Updates(&data)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -105,5 +108,23 @@ func (s *NodeTypeService) UpdateRecord(tid string, id string, data map[string]in
 }
 
 func (s *NodeTypeService) DeleteRecord(tid string, id string) error {
-	return s.db.Table(tid).Where("id = ?", id).Delete(nil).Error
+	// Soft delete: mark deleted_at and optionally deleted_by
+	updates := map[string]interface{}{
+		"deleted_at": time.Now(),
+	}
+	// NOTE: if you have the actor/user id available at handler layer, pass it down and set deleted_by accordingly.
+	// e.g., updates["deleted_by"] = actorID
+	return s.db.Table(tid).Where("id = ? AND deleted_at IS NULL", id).Updates(updates).Error
+}
+
+func (s *NodeTypeService) RestoreRecord(tid string, id string) error {
+	// Soft-restore: clear deleted_at and deleted_by only if the record is currently soft-deleted
+	updates := map[string]interface{}{
+		"deleted_at": nil,
+	}
+	result := s.db.Table(tid).Where("id = ? AND deleted_at IS NOT NULL", id).Updates(updates)
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return result.Error
 }

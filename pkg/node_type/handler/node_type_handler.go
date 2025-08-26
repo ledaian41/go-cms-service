@@ -1,12 +1,12 @@
 package node_type_handler
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
+	"net/http"
 )
 
 type NodeType struct {
@@ -87,14 +87,16 @@ func (n *NodeType) ListApi(c *gin.Context) {
 // @Failure 404
 // @Router /{typeId}/{id} [get]
 func (n *NodeType) ReadApi(c *gin.Context) {
-	result, err := n.nodeTypeService.FetchRecord(c.Param("typeId"), c.Param("id"))
+	typeId := c.Param("typeId")
+	id := c.Param("id")
+	result, err := n.nodeTypeService.FetchRecord(typeId, c.Param("id"))
 	n.nodeTypeService.ProcessFilePath(result)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	if result == nil {
-		c.String(http.StatusNotFound, "not found")
+		c.String(http.StatusNotFound, fmt.Sprintf("%s::%s not found", typeId, id))
 		return
 	}
 	c.JSON(http.StatusOK, result)
@@ -188,7 +190,7 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 
 	record, err := n.nodeTypeService.FetchRecord(typeId, id)
 	if err != nil || record == nil {
-		c.String(http.StatusNotFound, "not found")
+		c.String(http.StatusNotFound, fmt.Sprintf("%s::%s not found", typeId, id))
 		return
 	}
 
@@ -207,8 +209,8 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 }
 
 // DeleteApi godoc
-// @Summary Delete node
-// @Description Permanently delete a specific node
+// @Summary Soft delete node
+// @Description Soft delete (mark as deleted) a specific node by setting deleted_at/deleted_by
 // @Tags NodeType
 // @Accept json
 // @Produce json
@@ -221,15 +223,37 @@ func (n *NodeType) UpdateApi(c *gin.Context) {
 func (n *NodeType) DeleteApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")
-
 	record, err := n.nodeTypeService.FetchRecord(typeId, id)
 	if err != nil || record == nil {
-		c.String(http.StatusNotFound, "not found")
+		c.String(http.StatusNotFound, fmt.Sprintf("%s::%s not found", typeId, id))
 		return
 	}
 
 	if err = n.nodeTypeService.DeleteRecord(typeId, id); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+// RestoreApi godoc
+// @Summary Restore node
+// @Description Soft-restore a previously soft-deleted node by clearing `deleted_at` and `deleted_by`.
+// @Tags NodeType
+// @Accept json
+// @Produce json
+// @Param typeId path string true "Type ID"
+// @Param id path string true "Node ID"
+// @Success 200 {object} map[string]string "{ message: \"success\" }"
+// @Failure 404 {object} map[string]string "{ error: \"record not found or not deleted\" }"
+// @Failure 400 {string} string "bad request"
+// @Router /{typeId}/{id}/restore [post]
+func (n *NodeType) RestoreApi(c *gin.Context) {
+	typeId := c.Param("typeId")
+	id := c.Param("id")
+	err := n.nodeTypeService.RestoreRecord(typeId, id)
+	if err != nil {
+		c.String(http.StatusNotFound, fmt.Sprintf("%s::%s not found or not deleted", typeId, id))
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "success"})

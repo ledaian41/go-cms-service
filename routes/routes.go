@@ -45,6 +45,7 @@ func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
 	r.POST("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.CreateApi)
 	r.PATCH("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.UpdateApi)
 	r.DELETE("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.DeleteApi)
+	r.POST("/:typeId/:id/restore", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.RestoreApi)
 
 	fileHandler := handler.NewFileHandler(fileService)
 	r.GET("/file/*path", fileHandler.ReadFile)
