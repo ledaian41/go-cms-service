@@ -240,7 +240,7 @@
                 }
             },
             "delete": {
-                "description": "Permanently delete a specific node",
+                "description": "Soft delete (mark as deleted) a specific node by setting deleted_at/deleted_by",
                 "consumes": [
                     "application/json"
                 ],
@@ -250,7 +250,7 @@
                 "tags": [
                     "NodeType"
                 ],
-                "summary": "Delete node",
+                "summary": "Soft delete node",
                 "parameters": [
                     {
                         "type": "string",
@@ -276,6 +276,63 @@
                     },
                     "404": {
                         "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/{typeId}/{id}/restore": {
+            "post": {
+                "description": "Soft-restore a previously soft-deleted node by clearing `deleted_at` and `deleted_by`.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "NodeType"
+                ],
+                "summary": "Restore node",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type ID",
+                        "name": "typeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Node ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{ message: \\\"success\\\" }",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "{ error: \\\"record not found or not deleted\\\" }",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
