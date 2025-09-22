@@ -2,11 +2,13 @@
   {
     "type_id": "managerMenu",
     "id": "1evmrhn",
-    "name": "Product Category"
+    "name": "Product Category",
+    "path": "/product-category"
   },
   {
     "type_id": "managerMenu",
     "id": "14zmvkx",
-    "name": "Product"
+    "name": "Product",
+    "path": "/product"
   }
 ]

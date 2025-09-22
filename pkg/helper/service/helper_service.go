@@ -41,7 +41,7 @@ func (s *HelperService) loadJsonToDB(content []map[string]interface{}, ch chan<-
 			id, ok := item["id"].(string)
 			if ok {
 				if s.checkRecordExist(tid, id) {
-					recordId := s.updateRecord(typeId, item)
+					recordId := s.updateRecord(tid, item)
 					ch <- fmt.Sprintf("%s::%s", typeId, recordId)
 					continue
 				}
