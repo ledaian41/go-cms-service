@@ -2,11 +2,13 @@ package node_type_handler
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/iancoleman/strcase"
+	"github.com/ledaian41/go-cms-service/pkg/node_type/utils"
 	"github.com/ledaian41/go-cms-service/pkg/shared/interface"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
-	"net/http"
 )
 
 type NodeType struct {
@@ -60,8 +62,11 @@ func (n *NodeType) ListApi(c *gin.Context) {
 		SortBy:        c.Query("sort"),
 		Query:         c.Request.URL.Query(),
 	})
+	cleanedRecords := make([]interface{}, 0)
 	for _, record := range records {
-		n.nodeTypeService.ProcessFilePath(record)
+		cleaned := nodeType_utils.OmitEmpty(record)
+		n.nodeTypeService.ProcessFilePath(cleaned)
+		cleanedRecords = append(cleanedRecords, cleaned)
 	}
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
@@ -69,7 +74,7 @@ func (n *NodeType) ListApi(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"items":      records,
+		"items":      cleanedRecords,
 		"pagination": pagination,
 	})
 }
@@ -90,6 +95,7 @@ func (n *NodeType) ReadApi(c *gin.Context) {
 	typeId := c.Param("typeId")
 	id := c.Param("id")
 	result, err := n.nodeTypeService.FetchRecord(typeId, c.Param("id"))
+	result = nodeType_utils.OmitEmpty(result)
 	n.nodeTypeService.ProcessFilePath(result)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())

@@ -3,11 +3,13 @@ package helper_service
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"sync"
+
+	"github.com/iancoleman/strcase"
 	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"gorm.io/gorm"
-	"io/ioutil"
-	"sync"
 )
 
 type HelperService struct {
@@ -30,20 +32,22 @@ func (s *HelperService) LoadJsonData(path string, ch chan<- string) {
 func (s *HelperService) loadJsonToDB(content []map[string]interface{}, ch chan<- string) {
 	for _, item := range content {
 		if typeId, ok := item["type_id"].(string); ok {
-			if !s.db.Migrator().HasTable(typeId) {
+			typeId = strcase.ToLowerCamel(typeId)
+			tid := strcase.ToSnake(typeId)
+			if !s.db.Migrator().HasTable(tid) {
 				continue
 			}
 
 			id, ok := item["id"].(string)
 			if ok {
-				if s.checkRecordExist(typeId, id) {
+				if s.checkRecordExist(tid, id) {
 					recordId := s.updateRecord(typeId, item)
 					ch <- fmt.Sprintf("%s::%s", typeId, recordId)
 					continue
 				}
 			}
 
-			recordId := s.createNewRecord(typeId, item)
+			recordId := s.createNewRecord(tid, item)
 			if recordId != "" {
 				ch <- fmt.Sprintf("%s::%s", typeId, recordId)
 			}

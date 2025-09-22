@@ -2,14 +2,16 @@ package node_type_handler
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
+	shared_utils "github.com/ledaian41/go-cms-service/pkg/shared/utils"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type MockNodeTypeService struct {
@@ -40,13 +42,25 @@ func (m *MockNodeTypeService) CheckNodeTypeExist(tid string) bool {
 	panic("implement me")
 }
 
-func (m *MockNodeTypeService) FetchRecords(tid string) ([]map[string]interface{}, error) {
+func (m *MockNodeTypeService) RestoreRecord(tid string, id string) error {
+	panic("implement me")
+}
+
+func (m *MockNodeTypeService) FetchPropertyTypesByTid(tid string) []shared_dto.PropertyTypeDTO {
+	panic("implement me")
+}
+
+func (m *MockNodeTypeService) ProcessFilePath(record map[string]interface{}) {
+	panic("implement me")
+}
+
+func (m *MockNodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
 	args := m.Called(tid)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, nil, args.Error(1)
 	}
 
-	return args.Get(0).([]map[string]interface{}), args.Error(1)
+	return args.Get(0).([]map[string]interface{}), nil, args.Error(1)
 }
 
 func (m *MockNodeTypeService) FetchRecord(tid string, id string) (map[string]interface{}, error) {

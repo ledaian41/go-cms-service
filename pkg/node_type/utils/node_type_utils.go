@@ -3,10 +3,11 @@ package nodeType_utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
 	"io/ioutil"
 	"log"
 	"path/filepath"
+
+	"github.com/ledaian41/go-cms-service/pkg/node_type/model"
 )
 
 func ReadSchemaJson(path string) (*node_type_model.NodeType, error) {
@@ -42,4 +43,19 @@ func ReadSchemasFromDir(path string) ([]*node_type_model.NodeType, error) {
 		schemas = append(schemas, schema)
 	}
 	return schemas, nil
+}
+
+func OmitEmpty(obj map[string]interface{}) map[string]interface{} {
+	if obj == nil {
+		return obj
+	}
+
+	var result = make(map[string]interface{})
+	for k, v := range obj {
+		if v == nil {
+			continue
+		}
+		result[k] = v
+	}
+	return result
 }
