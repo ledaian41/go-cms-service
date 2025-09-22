@@ -1,0 +1,17 @@
+{
+  "tid": "managerMenu",
+  "propertyTypes": [
+    {
+      "pid": "name",
+      "valueType": "STRING"
+    },
+    {
+      "pid": "path",
+      "valueType": "STRING"
+    },
+    {
+      "pid": "icon",
+      "valueType": "STRING"
+    }
+  ]
+}
