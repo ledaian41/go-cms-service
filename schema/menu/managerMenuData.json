@@ -1,6 +1,12 @@
 [
   {
     "type_id": "managerMenu",
+    "id": "7ikkr3",
+    "name": "Dashboard",
+    "path": "/"
+  },
+  {
+    "type_id": "managerMenu",
     "id": "1evmrhn",
     "name": "Product Category",
     "path": "/product-category"
