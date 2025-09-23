@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ledaian41/go-cms-service/config"
 	_ "github.com/ledaian41/go-cms-service/docs"
@@ -14,7 +16,6 @@ import (
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
@@ -40,6 +41,7 @@ func InitRoutes(db *gorm.DB, redis *config.RedisClient) *gin.Engine {
 	r.GET("helper/nodeType/delete", helperHandler.DeleteNodeType)
 
 	nodeTypeHandler := node_type_handler.NewNodeTypeHandler(nodeTypeService)
+	r.GET("info/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ReadNodeTypeInfo)
 	r.GET("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ListApi)
 	r.GET("/:typeId/:id", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.ReadApi)
 	r.POST("/:typeId", middleware.CheckNodeTypeExist(nodeTypeService), nodeTypeHandler.CreateApi)

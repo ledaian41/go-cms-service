@@ -19,6 +19,12 @@ func NewNodeTypeHandler(nodeTypeService shared_interface.NodeTypeService) *NodeT
 	return &NodeType{nodeTypeService: nodeTypeService}
 }
 
+func (n *NodeType) ReadNodeTypeInfo(c *gin.Context) {
+	typeId := strcase.ToLowerCamel(c.Param("typeId"))
+	nodeType := n.nodeTypeService.FetchNodeType(typeId)
+	c.JSON(http.StatusOK, nodeType)
+}
+
 // ListApi godoc
 // @Summary List nodes by type
 // @Description Get nodes of a specific type with pagination, sorting, and flexible filter syntax.
