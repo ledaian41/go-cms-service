@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"sync"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
-	"sync"
 )
 
 var visitors = make(map[string]*rate.Limiter)
@@ -15,7 +16,7 @@ func getVisitor(ip string) *rate.Limiter {
 
 	limiter, exists := visitors[ip]
 	if !exists {
-		limiter = rate.NewLimiter(1, 3) // 1 req/sec, burst 3
+		limiter = rate.NewLimiter(10, 3) // 10 req/sec, burst 3
 		visitors[ip] = limiter
 	}
 	return limiter
