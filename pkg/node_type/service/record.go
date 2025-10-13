@@ -1,13 +1,14 @@
 package node_type_service
 
 import (
+	"slices"
+	"time"
+
 	"github.com/ledaian41/go-cms-service/pkg/helper/sql_helper"
 	"github.com/ledaian41/go-cms-service/pkg/shared/dto"
 	"github.com/ledaian41/go-cms-service/pkg/shared/utils"
 	"github.com/ledaian41/go-cms-service/pkg/value_type"
 	"gorm.io/gorm"
-	"slices"
-	"time"
 )
 
 func (s *NodeTypeService) FetchRecords(tid string, option shared_utils.QueryOption) ([]map[string]interface{}, *shared_dto.PaginationDTO, error) {
