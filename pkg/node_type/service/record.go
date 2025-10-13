@@ -92,6 +92,7 @@ func (s *NodeTypeService) FetchRecord(tid string, id string) (map[string]interfa
 
 func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error) {
 	data["id"] = sql_helper.GenerateID()
+	data["created_at"] = time.Now()
 	if result := s.db.Table(tid).Create(&data); result.Error != nil {
 		return data, result.Error
 	}
@@ -101,6 +102,7 @@ func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) 
 
 func (s *NodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error) {
 	delete(data, "id")
+	data["changed_at"] = time.Now()
 	result := s.db.Table(tid).Where("id = ? AND deleted_at IS NULL", id).Updates(&data)
 	if result.Error != nil {
 		return nil, result.Error
