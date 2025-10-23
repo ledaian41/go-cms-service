@@ -102,7 +102,7 @@ func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) 
 
 func (s *NodeTypeService) UpdateRecord(tid string, id string, data map[string]interface{}) (map[string]interface{}, error) {
 	delete(data, "id")
-	data["changed_at"] = time.Now()
+	data["modified_at"] = time.Now()
 	result := s.db.Table(tid).Where("id = ? AND deleted_at IS NULL", id).Updates(&data)
 	if result.Error != nil {
 		return nil, result.Error
