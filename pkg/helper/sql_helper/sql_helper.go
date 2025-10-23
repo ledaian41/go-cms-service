@@ -27,7 +27,7 @@ func GenerateID() string {
 }
 
 func QueryCreateNewTable(nodeType *node_type_model.NodeType) string {
-	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, created_at timestamptz DEFAULT NOW(), created_by text, modified_at timestamptz, modified_by text, deleted_at timestamptz, deleted_by text, ", strcase.ToSnake(nodeType.TID))
+	query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (id text PRIMARY KEY, created_at timestamptz DEFAULT NOW(), created_by text, modified_at timestamptz DEFAULT NOW(), modified_by text, deleted_at timestamptz, deleted_by text, ", strcase.ToSnake(nodeType.TID))
 	var columnDefs []string
 
 	for _, pt := range nodeType.PropertyTypes {

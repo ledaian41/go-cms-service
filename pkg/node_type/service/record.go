@@ -93,6 +93,7 @@ func (s *NodeTypeService) FetchRecord(tid string, id string) (map[string]interfa
 func (s *NodeTypeService) CreateRecord(tid string, data map[string]interface{}) (map[string]interface{}, error) {
 	data["id"] = sql_helper.GenerateID()
 	data["created_at"] = time.Now()
+	data["modified_at"] = time.Now()
 	if result := s.db.Table(tid).Create(&data); result.Error != nil {
 		return data, result.Error
 	}
